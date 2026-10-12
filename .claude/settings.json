@@ -1,0 +1,32 @@
+{
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "Edit(runs/**)",
+      "Bash(node .claude/scripts/state.mjs *)",
+      "Bash(node .claude/skills/artifact-contract/scripts/validate.mjs *)",
+      "WebSearch",
+      "WebFetch",
+      "mcp__microsoft-learn",
+      "mcp__context7"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre_tool_guard.mjs\"" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|AskUserQuestion",
+        "hooks": [
+          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_tool_state.mjs\"" }
+        ]
+      }
+    ]
+  }
+}
