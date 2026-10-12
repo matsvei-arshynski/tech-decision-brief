@@ -1,0 +1,298 @@
+{
+  "schema_version": 1,
+  "run_id": "20261012-2013-hangfire-vs-quartznet-background-jobs",
+  "status": "done",
+  "created_at": "2026-10-12T18:13:28.952Z",
+  "retry_limit": 3,
+  "simulate_fault": null,
+  "plan": null,
+  "artifacts": {
+    "00-request.md": {
+      "status": "valid",
+      "sha256": "eef75c6ab9b90f33d69cbceb0bc8eab133189c2c1e98a2d427f903399b2d8308",
+      "attempt": null,
+      "agent": "coordinator",
+      "written_at": "2026-10-12T18:13:31.896Z",
+      "script_gates": {},
+      "findings": []
+    },
+    "01-requirements.md": {
+      "status": "valid",
+      "sha256": "f170ea362a944d165a5ea079ca53490ff38606812b0d23c1275ed7a1d19ef865",
+      "attempt": 1,
+      "agent": "requirements-formalizer",
+      "written_at": "2026-10-12T18:13:56.010Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "02-plan.md": {
+      "status": "valid",
+      "sha256": "9c72672d1d1f31e56022c66a48700ead4a234035250c991a0de01273306475e4",
+      "attempt": null,
+      "agent": "coordinator",
+      "written_at": "2026-10-12T18:14:27.514Z",
+      "script_gates": {},
+      "findings": []
+    },
+    "research/11-docs.md": {
+      "status": "valid",
+      "sha256": "69a99fb58462db027177f03a5359afbcd29d7461d0e3cb8d46bacd3be4dbc273",
+      "attempt": 2,
+      "agent": "docs-researcher",
+      "written_at": "2026-10-12T18:23:39.155Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "pass"
+      },
+      "findings": []
+    },
+    "research/12-ecosystem.md": {
+      "status": "valid",
+      "sha256": "07f5730e81a379d2ed6ba1aa599c1b65615f20836abce93714982e1d44f6e4e0",
+      "attempt": 1,
+      "agent": "ecosystem-researcher",
+      "written_at": "2026-10-12T18:17:13.081Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "pass"
+      },
+      "findings": []
+    },
+    "gates/research.r1.md": {
+      "status": "valid",
+      "sha256": "8a2aecf27eb3566f499c170d63ff0a6df376fea05d8acbc945e6b3c4d35c54c1",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T18:17:40.632Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "30-brief-draft.md": {
+      "status": "valid",
+      "sha256": "f06c1b96b82e054460d83910742323bcf7766cf0509d36a9a285a40c819653c6",
+      "attempt": 4,
+      "agent": "brief-synthesizer",
+      "written_at": "2026-10-12T18:31:35.514Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "pass"
+      },
+      "findings": []
+    },
+    "gates/brief.r1.md": {
+      "status": "valid",
+      "sha256": "5c21d4c5c00bb841f8d15722d9ef60063fe27d631021263048d9d7026d569853",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T18:21:11.769Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "gates/research.r2.md": {
+      "status": "valid",
+      "sha256": "4f71334e538ab20f60927333d509b2daf1e5a2129388a0410cecc6b3c08c78db",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T18:24:13.993Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "gates/brief.r2.md": {
+      "status": "valid",
+      "sha256": "9b962763bc23b39935d52ef614b8f8158a51d8939ded28359b3c7397d23f4582",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T18:28:10.434Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "gates/brief.r3.md": {
+      "status": "valid",
+      "sha256": "c1dbe33b1b33eed32c99398e0bee13ccdce244eb1356cc8820a387dadeb49e1d",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T18:30:03.928Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "gates/brief.r4.md": {
+      "status": "valid",
+      "sha256": "f92de99758bd081a93370b092090ff6d6187b9637a320a53875a94dc0cdbdcf7",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T18:32:14.169Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "final/decision-brief.md": {
+      "status": "valid",
+      "sha256": "15f9bb96b9250b5397608c3fd8dd2020eaa26402ae65275124c9f4a4c96055a6",
+      "attempt": null,
+      "agent": "brief-renderer",
+      "written_at": "2026-10-12T18:33:23.857Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "pass"
+      },
+      "findings": []
+    },
+    "final/decision-brief.html": {
+      "status": "valid",
+      "sha256": "c344a48b4b66ea30c7c37ce0e9dce5fdd1029f6c4d14620a1ee492f1eb80341b",
+      "attempt": null,
+      "agent": "brief-renderer",
+      "written_at": "2026-10-12T18:34:01.154Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "pass"
+      },
+      "findings": []
+    }
+  },
+  "gates": {
+    "research.r1": {
+      "stage": "research",
+      "round": 1,
+      "result": "pass",
+      "report": "gates/research.r1.md",
+      "recorded_at": "2026-10-12T18:17:40.634Z",
+      "flagged": [],
+      "checked": {
+        "research/11-docs.md": "edd42bb4f6dedbd8b87567cc7366ce70f0069e84a66bb7884697a054a1ff866d",
+        "research/12-ecosystem.md": "07f5730e81a379d2ed6ba1aa599c1b65615f20836abce93714982e1d44f6e4e0"
+      }
+    },
+    "brief.r1": {
+      "stage": "brief",
+      "round": 1,
+      "result": "fail",
+      "report": "gates/brief.r1.md",
+      "recorded_at": "2026-10-12T18:21:11.771Z",
+      "flagged": [
+        "30-brief-draft.md (sections 1, 3, 4 H1 row, 5); research/11-docs.md and research/12-ecosystem.md (Constraint check, H1 Quartz.NET)",
+        "30-brief-draft.md (section 4, Monitoring row, Quartz.NET score 2 [S23]); research/11-docs.md Open issues; research/12-ecosystem.md Findings",
+        "30-brief-draft.md (section 4, Monitoring row, Hangfire score 4 [S14]); research/11-docs.md Open issues",
+        "30-brief-draft.md (section 4, .NET 8 and ASP.NET Core integration row, Quartz.NET score 2 [S3][S21]); research/11-docs.md Findings and Open issues",
+        "30-brief-draft.md (section 4, SQL Server setup and operation row, Quartz.NET score 2 [S19][S20]); research/11-docs.md Open issues"
+      ],
+      "checked": {
+        "30-brief-draft.md": "72977ba5c0879c3cdbe0be4e36f42ac3ca4c2320b1df9db523bc5728b56dd605"
+      }
+    },
+    "research.r2": {
+      "stage": "research",
+      "round": 2,
+      "result": "pass",
+      "report": "gates/research.r2.md",
+      "recorded_at": "2026-10-12T18:24:13.995Z",
+      "flagged": [],
+      "checked": {
+        "research/11-docs.md": "69a99fb58462db027177f03a5359afbcd29d7461d0e3cb8d46bacd3be4dbc273"
+      }
+    },
+    "brief.r2": {
+      "stage": "brief",
+      "round": 2,
+      "result": "fail",
+      "report": "gates/brief.r2.md",
+      "recorded_at": "2026-10-12T18:28:10.435Z",
+      "flagged": [
+        "30-brief-draft.md"
+      ],
+      "checked": {
+        "30-brief-draft.md": "3c307c0ee8cd23b82f3c30a177fdc23c077a0931c9ad584e4df37e91dfad63a5"
+      }
+    },
+    "brief.r3": {
+      "stage": "brief",
+      "round": 3,
+      "result": "pass",
+      "report": "gates/brief.r3.md",
+      "recorded_at": "2026-10-12T18:30:03.930Z",
+      "flagged": [],
+      "checked": {
+        "30-brief-draft.md": "0084228951bc74a3cd8d8e75748c4cd789183c7676f822af8e9dbb38d681b7f6"
+      }
+    },
+    "brief.r4": {
+      "stage": "brief",
+      "round": 4,
+      "result": "pass",
+      "report": "gates/brief.r4.md",
+      "recorded_at": "2026-10-12T18:32:14.170Z",
+      "flagged": [],
+      "checked": {
+        "30-brief-draft.md": "f06c1b96b82e054460d83910742323bcf7766cf0509d36a9a285a40c819653c6"
+      }
+    }
+  },
+  "approvals": {
+    "history": [
+      {
+        "kind": "requirements",
+        "round": 1,
+        "decision": "confirmed",
+        "valid": true,
+        "record": "approval/requirements.r1.json",
+        "at": "2026-10-12T18:14:21.414Z"
+      },
+      {
+        "kind": "brief",
+        "round": 1,
+        "decision": "rejected",
+        "valid": true,
+        "record": "approval/brief.r1.json",
+        "at": "2026-10-12T18:30:22.697Z"
+      },
+      {
+        "kind": "brief",
+        "round": 2,
+        "decision": "approved",
+        "valid": true,
+        "record": "approval/brief.r2.json",
+        "at": "2026-10-12T18:32:49.038Z"
+      }
+    ],
+    "requirements": {
+      "round": 1,
+      "decision": "confirmed",
+      "valid": true,
+      "sha256": "f170ea362a944d165a5ea079ca53490ff38606812b0d23c1275ed7a1d19ef865",
+      "feedback": null,
+      "record": "approval/requirements.r1.json",
+      "at": "2026-10-12T18:14:21.414Z"
+    },
+    "brief": {
+      "round": 2,
+      "decision": "approved",
+      "valid": true,
+      "sha256": "f06c1b96b82e054460d83910742323bcf7766cf0509d36a9a285a40c819653c6",
+      "feedback": null,
+      "record": "approval/brief.r2.json",
+      "at": "2026-10-12T18:32:49.038Z"
+    }
+  },
+  "updated_at": "2026-10-12T18:59:38.260Z",
+  "blocked": null
+}

@@ -1,0 +1,16 @@
+{
+  "kind": "brief",
+  "round": 1,
+  "decision": "approved",
+  "valid": true,
+  "answer": "Approve",
+  "feedback": null,
+  "target": "30-brief-draft.md",
+  "target_sha256": "6e29d6cf835e9f201660850cc22b886a1f6dd661a8e2b89221fbaa9d616bfa79",
+  "marker_sha8": "6e29d6cf",
+  "question": "[tech-brief:approve run=20261012-2038-azure-service-bus-event-grid-event draft=6e29d6cf] Approve this brief for final output?",
+  "tool_use_id": "toolu_01T7o9FZ2uzyKoyWhs8waNcF",
+  "session_id": "9265d91b-9f7d-4239-b026-0edbb069782f",
+  "captured_at": "2026-10-12T18:51:09.195Z",
+  "captured_by": "PostToolUse hook (post_tool_state.mjs)"
+}
