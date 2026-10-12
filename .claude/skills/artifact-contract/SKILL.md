@@ -16,7 +16,8 @@ runs/<YYYYMMDD-HHMM>-<slug>/
   research/11-docs.md      docs-researcher
   research/12-ecosystem.md ecosystem-researcher   (library questions)
   research/14-patterns.md  patterns-researcher    (architecture questions)
-  gates/<stage>.r<N>.md    validator           stage = research | brief, N = attempt
+  gates/<stage>.r<N>.md    validator           stage = research | brief, N = round
+  gates/UNRESOLVED.md      coordinator         only when a gate pass runs out of retries
   30-brief-draft.md        brief-synthesizer
   approval/*.json          hooks only — never write these
   final/decision-brief.md  brief-renderer      after approval only
@@ -45,12 +46,13 @@ Read the template before writing. Keep every heading exactly as written, in orde
 | `research/*.md` | `templates/research.md` |
 | `30-brief-draft.md`, `final/decision-brief.md` | `templates/brief.md` |
 | `final/decision-brief.html` | `templates/brief.html` |
+| `gates/<stage>.r<N>.md` | `templates/gate-report.md` |
 
 Template paths are relative to this skill's folder: `.claude/skills/artifact-contract/`.
 
 Research artifacts: `# Title`, then `## Summary`, `## Findings` (one `### <Candidate>` per
 candidate, in requirements order), `## Constraint check` (table: Constraint | Candidate |
-met / unmet / unknown | Evidence), `## Open issues`, `## Sources`.
+met / unmet / unknown / n/a | Evidence), `## Open issues`, `## Sources`.
 
 Brief: 9 sections, always present and in this order. Write "Not applicable — <reason>"
 rather than leaving a section out.
@@ -74,11 +76,32 @@ Source list entry, one per line under `## Sources`:
 
 ## Quality gates
 
-| Gate | Checked by | Rule |
-|---|---|---|
-| STRUCTURE | `scripts/validate.mjs` (hook, on write) | Front matter + required headings in order |
-| CITATIONS | `scripts/validate.mjs` (hook, on write) | Every Findings bullet has `[Sn]`; every `[Sn]` defined; no unused sources |
-| CURRENCY | validator | Each candidate's current version and its release date are stated and cited |
-| CONSTRAINT-COVERAGE | validator | Every hard constraint is a matrix row; the recommendation violates none and has no `unknown` on one |
+Script gates run automatically: the PostToolUse hook runs `scripts/validate.mjs` on every
+write under `runs/` and records the result in `workflow-state.json`. To run it yourself:
+`node .claude/skills/artifact-contract/scripts/validate.mjs <artifact-path>`.
+
+| Gate | Checked by | Stage | Rule |
+|---|---|---|---|
+| STRUCTURE | script | all | Front matter; exact headings in order; candidate subsections match requirements; one Constraint check row per hard constraint × candidate; brief matrix shape, sorting and correct totals |
+| CITATIONS | script | research, brief | Source lines in the fixed format, numbered S1…Sn; every `[Sn]` defined and every source cited; every Findings bullet cited; every matrix score cited; every brief source comes from the research |
+| CURRENCY | validator | research | Library: each candidate's latest stable version **and** its release date are stated and cited. Architecture: each candidate's GA status and relevant tier are stated and cited |
+| CONSTRAINT-COVERAGE | validator | research | Every hard constraint × candidate pair is met / unmet / unknown in at least one research artifact (not `n/a` everywhere) |
+| CONSTRAINT-COVERAGE | validator | brief | (a) Brief statuses follow the merge rule over the research (unmet if any unmet, else met if any met, else unknown); (b) the recommended option has no `unmet`; (c) if it has an `unknown`, confidence is `low` and the gap is listed under Open questions |
+
+## Who fixes what
+
+Each finding names one owner: the agent that owns the artifact to change.
+
+- STRUCTURE, CITATIONS: the owner of the failing artifact.
+- CURRENCY: `docs-researcher` for versions and GA status; `ecosystem-researcher` for release
+  dates when it was selected.
+- CONSTRAINT-COVERAGE at the research stage: the researcher for the constraint's dimension.
+
+  | Dimension | Library question | Architecture question |
+  |---|---|---|
+  | capability, compatibility, cost | docs-researcher | docs-researcher |
+  | license, maturity | ecosystem-researcher | docs-researcher |
+  | performance, operations | docs-researcher | patterns-researcher |
+- CONSTRAINT-COVERAGE at the brief stage: `brief-synthesizer`.
 
 Self-check before you return: run through the STRUCTURE and CITATIONS rules yourself.

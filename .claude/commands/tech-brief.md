@@ -1,6 +1,6 @@
 ---
 description: Produce a cited Tech Decision Brief for a technology question (coordinator)
-argument-hint: "<question + constraints> | --resume [run-id]"
+argument-hint: "<question + constraints> [--simulate-fault GATE:artifact] | --resume [run-id]"
 disable-model-invocation: true
 ---
 
@@ -14,10 +14,23 @@ Input: $ARGUMENTS
 
 - **The run folder** is `runs/<run-id>/`. All paths below are relative to it unless they
   start with `.claude/` or `runs/`.
-- **You write only** `00-request.md` and `02-plan.md`. Each subagent writes only its own
-  artifact. Never write `workflow-state.json` or anything under `approval/`.
+- **You write only** `00-request.md`, `02-plan.md` and, if the run gets blocked,
+  `gates/UNRESOLVED.md`. Each subagent writes only its own artifact:
+
+  | Agent | Artifact |
+  |---|---|
+  | requirements-formalizer | `01-requirements.md` |
+  | docs-researcher | `research/11-docs.md` |
+  | ecosystem-researcher | `research/12-ecosystem.md` |
+  | patterns-researcher | `research/14-patterns.md` |
+  | brief-synthesizer | `30-brief-draft.md` |
+  | validator | `gates/<stage>.r<N>.md` |
+  | brief-renderer | `final/decision-brief.md`, `final/decision-brief.html` |
+
+  Never write `workflow-state.json` or anything under `approval/`: hooks maintain them.
 - **State commands** run exactly as `node .claude/scripts/state.mjs <command> …` (this
-  form is pre-approved; don't wrap it in `cd` or other commands).
+  form is pre-approved; don't wrap it in `cd` or other commands). At the start of each
+  stage, run `state.mjs set-status <run-id> <status>` with the status the stage names.
 - **Launching a subagent:** call the Agent tool with `subagent_type` set to the agent name.
   Its prompt is always this block, plus the extra lines a stage names:
   ```
@@ -40,8 +53,10 @@ If the input starts with `--resume`: tell the user resume arrives in a later ver
 stop. <!-- Phase 5 -->
 
 Otherwise:
-1. Pick a slug of 3–6 words from the question and run `state.mjs init <slug>`. Its JSON
-   output gives `run_id` and `run_dir`.
+1. Pick a slug of 3–6 words from the question and run `state.mjs init <slug>`. If the
+   input contains `--simulate-fault <GATE>:<artifact>` (a test flag that makes one script
+   gate fail on attempt 1), pass it on: `state.mjs init <slug> --simulate-fault <GATE>:<artifact>`.
+   The JSON output gives `run_id` and `run_dir`.
 2. Write `00-request.md`:
    ```
    ---
@@ -58,7 +73,7 @@ Otherwise:
    None yet.
    ```
 
-## Stage 1 — Requirements
+## Stage 1 — Requirements (status `requirements`)
 
 1. Launch `requirements-formalizer` (attempt 1, task `write`).
 2. Read `01-requirements.md`. If **Open questions** isn't `None.`, ask them with
@@ -117,20 +132,70 @@ run_id: <run-id>
 | <agent> | question type is not <type> |
 ```
 
-## Stage 3 — Research
+## Stage 3 — Research (status `research`)
 
 Launch the group 2 agents from the plan in one message (attempt 1, task `write`).
 
-<!-- Phase 4: Stage 4 — research gate (validator, targeted retry, max 3). -->
+## Stage 4 — Research gate
 
-## Stage 5 — Synthesis
+Run the **gate procedure** (below) with stage `research` and the plan's research files.
+
+## Stage 5 — Synthesis (status `synthesis`)
 
 Launch `brief-synthesizer` (attempt 1, task `write`) with the extra line
 `Research: <comma-separated research files from the plan>`.
 
-<!-- Phase 4: Stage 6 — brief gate. -->
+## Stage 6 — Brief gate
 
-## Stage 7 — Approval
+Run the **gate procedure** with stage `brief` and `30-brief-draft.md`.
+
+## Gate procedure
+
+A gate pass checks a set of artifacts and re-runs only what failed, for at most
+**4 rounds: the first check plus 3 retries**. Report rounds are numbered per stage across
+the whole run (`research.r1`, `research.r2`, …), so a later pass continues the numbering.
+
+Each round:
+1. Launch `validator` with the extra lines:
+   ```
+   Stage: <research | brief>
+   Round: <n>
+   Report: gates/<stage>.r<n>.md
+   Artifacts: <comma-separated artifact paths>
+   Question type: <library | architecture>
+   ```
+   (`Attempt`/`Task` lines: use `Attempt: <n>` = the round, `Task: write`.)
+2. After the hand-back, run `state.mjs status <run-id>` and read the report.
+   **The gate passes** when the report says `result: pass` **and** every checked artifact
+   has status `valid` in state. Then the gate procedure is done.
+3. Otherwise collect the failures: every Findings row of the report, plus any checked
+   artifact whose state status is `invalid` with `findings` the report missed (owner = the
+   agent that owns that artifact). Group them by owner.
+4. If this was round 4 of this pass: go to **Unresolved**.
+5. Re-run each owner (all in one message), task `revise`, attempt = that artifact's
+   current attempt + 1, with the extra line `Findings to fix:` followed by that owner's
+   findings verbatim. Brief-synthesizer also gets its `Research: …` line.
+6. If a **research** artifact was re-run during the `brief` stage: first run a research
+   gate pass on just those research files, then re-run `brief-synthesizer` (task
+   `revise`, `Findings to fix: Research updated: <files>. Refresh the affected content.`).
+7. Start the next round.
+
+**Unresolved:** run `state.mjs set-status <run-id> blocked`. Write `gates/UNRESOLVED.md`:
+```
+# Unresolved gate failures
+
+Stage: <stage> · Rounds: <first>–<last> · Last report: gates/<stage>.r<n>.md
+
+| Gate | Artifact | Owner | Finding |
+|---|---|---|---|
+| … every finding still open … |
+
+Dependent work was stopped. To continue, change the requirements (for example relax or
+drop a hard constraint) and resume the run.
+```
+Show the user that table and stop. Do not start any later stage.
+
+## Stage 7 — Approval (status `approval`)
 
 1. Read `30-brief-draft.md`. Show the user its **Decision** section, the weighted totals,
    and the file path.
@@ -142,11 +207,15 @@ Launch `brief-synthesizer` (attempt 1, task `write`) with the extra line
 3. On `Approve`: go to Stage 8.
 4. Otherwise, the answer text (or the user's note) is the feedback. Launch
    `brief-synthesizer` (next attempt, task `revise`) with the extra lines
-   `Research: …` and `Feedback: <feedback, verbatim>`. Then repeat this stage.
+   `Research: …` and `Feedback: <feedback, verbatim>`. Then run Stage 6 (a new gate
+   pass, so the retry count starts again) and repeat this stage.
    <!-- Phase 6: classify feedback (editorial vs needs research). -->
 
-## Stage 8 — Render
+## Stage 8 — Render (status `rendering`)
 
-Launch `brief-renderer` (attempt 1, task `write`). Then report to the user:
+Launch `brief-renderer` (attempt 1, task `write`). When it hands back, run
+`state.mjs status <run-id>`: both `final/` files must be `valid`. If not, re-run
+`brief-renderer` once with `Findings to fix:` and their findings; if still invalid, stop
+and report the findings. Then run `state.mjs set-status <run-id> done` and report to the user:
 - the recommendation and confidence (from the Decision section);
 - `runs/<run-id>/final/decision-brief.md` and `runs/<run-id>/final/decision-brief.html`.
