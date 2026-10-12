@@ -18,16 +18,18 @@ Input: $ARGUMENTS
   artifact. Never write `workflow-state.json` or anything under `approval/`.
 - **State commands** run exactly as `node .claude/scripts/state.mjs <command> …` (this
   form is pre-approved; don't wrap it in `cd` or other commands).
-- **Launching a subagent:** call the Agent tool with `subagent_type` set to the agent name
-  and `run_in_background: false`, so you get its result before you continue. Its prompt
-  is always this block, plus the extra lines a stage names:
+- **Launching a subagent:** call the Agent tool with `subagent_type` set to the agent name.
+  Its prompt is always this block, plus the extra lines a stage names:
   ```
   Run folder: runs/<run-id>
   Attempt: <n>
   Task: <write | revise>
   ```
+  Subagents run in the background: the Agent call returns at once, and the agent's
+  one-line reply arrives later as a hand-back message. Until then, don't read its
+  artifact or start the next step.
 - **Parallel groups:** launch every agent of the group in the **same message** (one Agent
-  call each, all `run_in_background: false`). Continue only when all have returned.
+  call each). Continue only when every agent of the group has handed back.
 - **Asking the user:** use AskUserQuestion: at most 4 questions per call, 2–4 options each,
   `header` at most 12 characters. The user can always type their own answer.
 - After each stage, tell the user in one line what finished and what comes next.
