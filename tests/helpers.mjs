@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 export const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const FIXTURES = {
   library: join(REPO, 'runs', '20261012-2119-async-python-http-client-choice'),
-  architecture: join(REPO, 'runs', '20261012-2038-azure-service-bus-event-grid-event'),
+  architecture: join(REPO, 'runs', '20261012-2154-azure-messaging-service-bus-event-grid'),
 };
 
 export function project() {

@@ -1,0 +1,16 @@
+{
+  "kind": "requirements",
+  "round": 1,
+  "decision": "confirmed",
+  "valid": true,
+  "answer": "Confirm",
+  "feedback": null,
+  "target": "01-requirements.md",
+  "target_sha256": "513c23e772680ff0cb12d8ad4d803036913bf9620228a998a2a41f6c7daeb293",
+  "marker_sha8": "513c23e7",
+  "question": "[tech-brief:confirm-requirements run=20261012-2154-azure-messaging-service-bus-event-grid req=513c23e7] Are these requirements correct?",
+  "tool_use_id": "toolu_01K7s5PcTzeTmV9WD8q8AMoA",
+  "session_id": "b6e8cef8-966f-4ef8-b7a4-7e4b9646be07",
+  "captured_at": "2026-10-12T19:55:39.936Z",
+  "captured_by": "PostToolUse hook (post_tool_state.mjs)"
+}

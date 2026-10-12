@@ -1,0 +1,344 @@
+{
+  "schema_version": 1,
+  "run_id": "20261012-2204-nodejs-logging-pino-vs-winston",
+  "status": "blocked",
+  "created_at": "2026-10-12T20:04:54.638Z",
+  "retry_limit": 3,
+  "simulate_fault": {
+    "gate": "CITATIONS",
+    "artifact": "ecosystem",
+    "always": true
+  },
+  "plan": {
+    "question_type": "library",
+    "research": [
+      "research/11-docs.md",
+      "research/12-ecosystem.md"
+    ]
+  },
+  "artifacts": {
+    "00-request.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:05:36.993Z",
+      "sha256": "41971f9cbe34aea651b4aaf7d15f52d411af8a84655bfb4724d2ae24bef3f3a3",
+      "attempt": null,
+      "agent": "coordinator",
+      "written_at": "2026-10-12T20:05:36.994Z",
+      "script_gates": {},
+      "findings": []
+    },
+    "01-requirements.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:05:54.037Z",
+      "sha256": "e1431b99b941215d3858f726119260b4053ddccd71e5ba50948a7323ca653830",
+      "attempt": 2,
+      "agent": "requirements-formalizer",
+      "written_at": "2026-10-12T20:05:54.038Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "02-plan.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:06:17.252Z",
+      "sha256": "ea77a8b3f15774d1db47fb63c9b778261c91567cb0734adea6dbb1e51c954cdd",
+      "attempt": null,
+      "agent": "workflow",
+      "written_at": "2026-10-12T20:06:17.253Z",
+      "script_gates": {},
+      "findings": []
+    },
+    "research/12-ecosystem.md": {
+      "status": "invalid",
+      "valid_at": null,
+      "sha256": "afd39ecd29ca14eded4432cb150a6e708875a9e439fd4457907311c276996637",
+      "attempt": 4,
+      "agent": "ecosystem-researcher",
+      "written_at": "2026-10-12T20:10:34.473Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "fail"
+      },
+      "findings": [
+        "CITATIONS: [injected] simulated failure on attempt 4 (--simulate-fault …:always); fix: re-run the owner"
+      ],
+      "gate_findings": [
+        {
+          "gate": "CITATIONS",
+          "finding": "Script finding: \"CITATIONS: [injected] simulated failure on attempt 4 (--simulate-fault …:always); fix: re-run the owner\"",
+          "fix": "Re-run the owner and re-write the artifact so the CITATIONS script gate passes."
+        }
+      ],
+      "flagged_by": {
+        "stage": "research",
+        "round": 4,
+        "report": "gates/research.r4.md"
+      }
+    },
+    "research/11-docs.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:10:57.248Z",
+      "sha256": "d329bb6af934239aa143fd7cc2766f1f8976e8cb9caffbf9a31ddb4271ab379a",
+      "attempt": 1,
+      "agent": "docs-researcher",
+      "written_at": "2026-10-12T20:08:36.585Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "pass"
+      },
+      "findings": []
+    },
+    "gates/research.r1.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:08:55.324Z",
+      "sha256": "1e651b2cc26d9b822a9c3d7620aebed83976f83087fdc8289b80fd4ce5eede5c",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T20:08:55.325Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "gates/research.r2.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:09:38.739Z",
+      "sha256": "8dba19fa1872f683f8270e44b7bdb1c3624a5748c2396390ff6a010fbafca34e",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T20:09:38.741Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "gates/research.r3.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:10:15.224Z",
+      "sha256": "82ffbf11bd8877440294317d4df6604bca90e1a5f0a848602f98453e185d5cf8",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T20:10:15.225Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "gates/research.r4.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:10:57.246Z",
+      "sha256": "c016ffef32dd4fbf8b40c7e98f0eda99c5cac7f103264cb931b1f0d2ec4805bc",
+      "attempt": null,
+      "agent": "validator",
+      "written_at": "2026-10-12T20:10:57.247Z",
+      "script_gates": {
+        "STRUCTURE": "pass",
+        "CITATIONS": "n/a"
+      },
+      "findings": []
+    },
+    "gates/UNRESOLVED.md": {
+      "status": "valid",
+      "valid_at": "2026-10-12T20:11:03.059Z",
+      "sha256": "d485cd86bb320d2d19c7d0abe6d01e53ff685ba5eb754839c741170cea04f824",
+      "attempt": null,
+      "agent": "workflow",
+      "written_at": "2026-10-12T20:11:03.060Z",
+      "script_gates": {},
+      "findings": []
+    }
+  },
+  "gates": {
+    "research.r1": {
+      "stage": "research",
+      "round": 1,
+      "result": "fail",
+      "report": "gates/research.r1.md",
+      "recorded_at": "2026-10-12T20:08:55.326Z",
+      "flagged": [
+        "research/12-ecosystem.md"
+      ],
+      "checked": {
+        "research/11-docs.md": "d329bb6af934239aa143fd7cc2766f1f8976e8cb9caffbf9a31ddb4271ab379a",
+        "research/12-ecosystem.md": "003d999488cea08161b60783ec624cf5bc03230b0cbb9f8f65651184992b1bdd"
+      }
+    },
+    "research.r2": {
+      "stage": "research",
+      "round": 2,
+      "result": "fail",
+      "report": "gates/research.r2.md",
+      "recorded_at": "2026-10-12T20:09:38.742Z",
+      "flagged": [
+        "research/12-ecosystem.md"
+      ],
+      "checked": {
+        "research/11-docs.md": "d329bb6af934239aa143fd7cc2766f1f8976e8cb9caffbf9a31ddb4271ab379a",
+        "research/12-ecosystem.md": "53cbc21cb0f9a9377dab89bd4d6dee5fadbc5d7ae0706a2411f442b861ae88c1"
+      }
+    },
+    "research.r3": {
+      "stage": "research",
+      "round": 3,
+      "result": "fail",
+      "report": "gates/research.r3.md",
+      "recorded_at": "2026-10-12T20:10:15.226Z",
+      "flagged": [
+        "research/12-ecosystem.md"
+      ],
+      "checked": {
+        "research/11-docs.md": "d329bb6af934239aa143fd7cc2766f1f8976e8cb9caffbf9a31ddb4271ab379a",
+        "research/12-ecosystem.md": "7ebaeb1bd4bec5094323261bb6af2b2890c8202275ca3799d73908aa6903c0cb"
+      }
+    },
+    "research.r4": {
+      "stage": "research",
+      "round": 4,
+      "result": "fail",
+      "report": "gates/research.r4.md",
+      "recorded_at": "2026-10-12T20:10:57.248Z",
+      "flagged": [
+        "research/12-ecosystem.md"
+      ],
+      "checked": {
+        "research/11-docs.md": "d329bb6af934239aa143fd7cc2766f1f8976e8cb9caffbf9a31ddb4271ab379a",
+        "research/12-ecosystem.md": "afd39ecd29ca14eded4432cb150a6e708875a9e439fd4457907311c276996637"
+      }
+    }
+  },
+  "approvals": {
+    "history": [
+      {
+        "kind": "requirements",
+        "round": 1,
+        "decision": "confirmed",
+        "valid": true,
+        "record": "approval/requirements.r1.json",
+        "at": "2026-10-12T20:06:11.849Z"
+      }
+    ],
+    "requirements": {
+      "round": 1,
+      "decision": "confirmed",
+      "valid": true,
+      "sha256": "e1431b99b941215d3858f726119260b4053ddccd71e5ba50948a7323ca653830",
+      "feedback": null,
+      "record": "approval/requirements.r1.json",
+      "at": "2026-10-12T20:06:11.849Z"
+    }
+  },
+  "updated_at": "2026-10-12T20:11:03.061Z",
+  "blocked": {
+    "reason": "research gate failed 4 rounds in a row",
+    "stage": "research",
+    "report": "gates/UNRESOLVED.md",
+    "requirements_sha256": "e1431b99b941215d3858f726119260b4053ddccd71e5ba50948a7323ca653830",
+    "at": "2026-10-12T20:11:03.060Z"
+  },
+  "launches": [
+    {
+      "at": "2026-10-12T20:05:02.642Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "requirements-formalizer",
+      "stage": "requirements",
+      "attempt": 1,
+      "task": "write",
+      "fixes": false
+    },
+    {
+      "at": "2026-10-12T20:05:39.775Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "requirements-formalizer",
+      "stage": "requirements",
+      "attempt": 2,
+      "task": "revise",
+      "fixes": false
+    },
+    {
+      "at": "2026-10-12T20:06:22.074Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "docs-researcher",
+      "stage": "research",
+      "attempt": 1,
+      "task": "write",
+      "fixes": false
+    },
+    {
+      "at": "2026-10-12T20:06:22.774Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "ecosystem-researcher",
+      "stage": "research",
+      "attempt": 1,
+      "task": "write",
+      "fixes": false
+    },
+    {
+      "at": "2026-10-12T20:08:44.427Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "validator",
+      "stage": "research-gate",
+      "attempt": null,
+      "task": null,
+      "fixes": false
+    },
+    {
+      "at": "2026-10-12T20:09:02.999Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "ecosystem-researcher",
+      "stage": "research-gate",
+      "attempt": 2,
+      "task": "revise",
+      "fixes": true
+    },
+    {
+      "at": "2026-10-12T20:09:28.200Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "validator",
+      "stage": "research-gate",
+      "attempt": null,
+      "task": null,
+      "fixes": false
+    },
+    {
+      "at": "2026-10-12T20:09:47.023Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "ecosystem-researcher",
+      "stage": "research-gate",
+      "attempt": 3,
+      "task": "revise",
+      "fixes": true
+    },
+    {
+      "at": "2026-10-12T20:10:04.147Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "validator",
+      "stage": "research-gate",
+      "attempt": null,
+      "task": null,
+      "fixes": false
+    },
+    {
+      "at": "2026-10-12T20:10:22.965Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "ecosystem-researcher",
+      "stage": "research-gate",
+      "attempt": 4,
+      "task": "revise",
+      "fixes": true
+    },
+    {
+      "at": "2026-10-12T20:10:46.120Z",
+      "session_id": "40591a6b-c5b3-41b3-b65d-143b89939d89",
+      "agent": "validator",
+      "stage": "research-gate",
+      "attempt": null,
+      "task": null,
+      "fixes": false
+    }
+  ]
+}

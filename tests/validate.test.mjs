@@ -9,14 +9,17 @@ import { FIXTURES, project, REPO } from './helpers.mjs';
 const p = project();
 after(() => p.cleanup());
 
-const ARTIFACTS = ['01-requirements.md', 'research/11-docs.md', '30-brief-draft.md', 'final/decision-brief.md', 'final/decision-brief.html'];
+const ARTIFACT = /^(01-requirements\.md|research\/.+\.md|30-brief-draft\.md|final\/decision-brief\.(md|html))$/;
 
-test('every sample run passes the script gates', () => {
+test('every sample run: the script gates agree with the recorded state', () => {
   for (const id of readdirSync(join(REPO, 'runs')).filter((n) => /^\d{8}-/.test(n))) {
     const dir = join(REPO, 'runs', id);
-    for (const rel of [...ARTIFACTS, ...readdirSync(join(dir, 'research')).map((n) => `research/${n}`)]) {
-      const v = validateArtifact(join(dir, rel), { runDir: dir });
-      assert.notEqual(v.result, 'fail', `${id}/${rel}: ${JSON.stringify(v.gates)}`);
+    const state = JSON.parse(readFileSync(join(dir, 'workflow-state.json'), 'utf8'));
+    for (const [rel, a] of Object.entries(state.artifacts)) {
+      if (!ARTIFACT.test(rel)) continue;
+      const v = validateArtifact(join(dir, rel), { runDir: dir, simulateFault: state.simulate_fault });
+      // A run that ended blocked keeps its failing artifact; everything else passes.
+      assert.equal(v.result === 'fail', a.status === 'invalid', `${id}/${rel}: ${a.status} vs ${JSON.stringify(v.gates)}`);
     }
   }
 });

@@ -91,13 +91,13 @@ request, requirements, plan, research, gate reports, approval records, state and
 
 | Run | Question | What it shows | Outcome |
 |---|---|---|---|
-| [`20261012-2013-hangfire-…`](runs/20261012-2013-hangfire-vs-quartznet-background-jobs/final/decision-brief.md) | Hangfire vs Quartz.NET (library) | docs ‖ ecosystem research; brief-gate failures with targeted retries (a research re-run makes the brief stale); **reject → feedback → revise → approve** | Hangfire, high confidence |
-| [`20261012-2038-azure-…`](runs/20261012-2038-azure-service-bus-event-grid-event/final/decision-brief.md) | Service Bus vs Event Grid vs Event Hubs (architecture) | `patterns-researcher` selected instead of ecosystem; Microsoft Learn MCP; two research-gate retries on one researcher | No candidate meets every hard constraint, low confidence |
-| [`20261012-2103-express5-…`](runs/20261012-2103-express5-vs-fastify-node22/final/decision-brief.md) | Express 5 vs Fastify (library) | `--simulate-fault CITATIONS:ecosystem`: injected gate failure → only that researcher re-runs; **session killed mid-run → `--resume`** relaunches only the interrupted agent | Express 5, low confidence |
+| [`20261012-2103-express5-…`](runs/20261012-2103-express5-vs-fastify-node22/final/decision-brief.md) | Express 5 vs Fastify (library) | Two Q&A rounds; `--simulate-fault CITATIONS:ecosystem`: injected gate failure → only that researcher re-runs → pass; **session killed during synthesis → `--resume`** relaunches only the synthesizer | Express 5, low confidence |
 | [`20261012-2119-async-python-…`](runs/20261012-2119-async-python-http-client-choice/final/decision-brief.md) | httpx vs aiohttp (library) | Run from a **fresh clone following only this README**: every gate passes first time, no retries | httpx, medium confidence |
+| [`20261012-2154-azure-…`](runs/20261012-2154-azure-messaging-service-bus-event-grid/final/decision-brief.md) | Service Bus vs Event Grid vs Event Hubs (architecture) | `patterns-researcher` selected instead of ecosystem; Microsoft Learn MCP; **session killed during research → `--resume`**. [`events.jsonl`](runs/20261012-2154-azure-messaging-service-bus-event-grid/events.jsonl) shows the session change and the researchers relaunched | Event Hubs, high confidence |
+| [`20261012-2204-nodejs-logging-…`](runs/20261012-2204-nodejs-logging-pino-vs-winston/gates/UNRESOLVED.md) | pino vs winston (library) | `--simulate-fault CITATIONS:ecosystem:always`: four research-gate rounds, each re-running only the ecosystem researcher, then the run **stops as `blocked`**; no brief is drafted; [`UNRESOLVED.md`](runs/20261012-2204-nodejs-logging-pino-vs-winston/gates/UNRESOLVED.md) reports the open finding | Blocked (by design) |
 
-Runs 1 and 2 were recorded before the workflow engine (below) took over orchestration;
-their artifacts pass today's gates, and the engine reports both runs complete.
+Runs 3 and 4 have an `events.jsonl`; runs 1 and 2 were recorded before the event log
+existed.
 
 ### Testing the failure path
 
