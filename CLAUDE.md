@@ -1,4 +1,4 @@
-# tech-brief-workflow
+# tech-decision-brief
 
 This repo is a Claude Code workflow. Its entry point is `/tech-brief`
 (`.claude/commands/tech-brief.md`), which runs the coordinator in the main session.

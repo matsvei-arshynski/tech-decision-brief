@@ -6,7 +6,9 @@ user-invocable: false
 
 # Artifact contract
 
-Every run folder has the same shape. File names are fixed; never invent new ones.
+Every run folder has the same shape. File names are fixed; never invent new ones. Paths
+are relative to your working directory (the project root): use `runs/<run-id>/…` exactly
+as given, never an absolute path you built yourself.
 
 ```
 runs/<YYYYMMDD-HHMM>-<slug>/

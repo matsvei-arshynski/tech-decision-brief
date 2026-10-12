@@ -1,4 +1,4 @@
-# tech-brief-workflow
+# tech-decision-brief
 
 An agentic workflow for [Claude Code](https://code.claude.com) that turns a technology
 question into a cited **Tech Decision Brief** in Markdown and HTML.
@@ -29,8 +29,8 @@ Nothing reads a `.env` file.
 ## Setup
 
 ```bash
-git clone <this-repo-url> tech-brief-workflow
-cd tech-brief-workflow
+git clone https://github.com/matsvei-arshynski/tech-decision-brief.git
+cd tech-decision-brief
 claude
 ```
 
@@ -81,7 +81,7 @@ change the requirements: the coordinator asks what to change.
 
 ## Sample runs
 
-Three committed runs show different paths through the workflow. Each folder has the
+Four committed runs show different paths through the workflow. Each folder has the
 request, requirements, plan, research, gate reports, approval records, state and final brief.
 
 | Run | Question | What it shows | Outcome |
@@ -89,6 +89,7 @@ request, requirements, plan, research, gate reports, approval records, state and
 | [`20261012-2013-hangfire-…`](runs/20261012-2013-hangfire-vs-quartznet-background-jobs/final/decision-brief.md) | Hangfire vs Quartz.NET (library) | Q&A; docs ‖ ecosystem research; brief-gate failures with targeted retries (a research re-run makes the brief stale); **reject → feedback → revise → approve** | Hangfire, high confidence |
 | [`20261012-2038-azure-…`](runs/20261012-2038-azure-service-bus-event-grid-event/final/decision-brief.md) | Service Bus vs Event Grid vs Event Hubs (architecture) | `patterns-researcher` selected instead of ecosystem; Microsoft Learn MCP; two research-gate retries on one researcher | No candidate meets every hard constraint, low confidence |
 | [`20261012-2103-express5-…`](runs/20261012-2103-express5-vs-fastify-node22/final/decision-brief.md) | Express 5 vs Fastify (library) | `--simulate-fault CITATIONS:ecosystem`: injected gate failure → only that researcher re-runs; **session killed mid-run → `--resume`** relaunches only the interrupted agent | Express 5, low confidence |
+| [`20261012-2119-async-python-…`](runs/20261012-2119-async-python-http-client-choice/final/decision-brief.md) | httpx vs aiohttp (library) | Run from a **fresh clone following only this README**: every gate passes first time, no retries | httpx, medium confidence |
 
 Runs 1 and 2 were recorded before the workflow engine (below) took over orchestration;
 their artifacts pass today's gates, and the engine reports both runs complete.
