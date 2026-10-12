@@ -1,0 +1,13 @@
+# Secrets and local overrides
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+
+# Workflow runtime
+*.lock
+
+# OS / tooling
+.DS_Store
+Thumbs.db
+node_modules/
