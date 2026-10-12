@@ -1,7 +1,7 @@
 // The only module that writes workflow-state.json.
 // Used by the PostToolUse hook and by .claude/scripts/state.mjs.
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { splitFrontMatter, validateArtifact } from '../../skills/artifact-contract/scripts/validate.mjs';
@@ -21,7 +21,8 @@ const DOWNSTREAM = {
 // Artifacts that pass on script gates alone; research and the brief also need a gate report.
 const NEEDS_GATE_REPORT = (rel) => rel.startsWith('research/') || rel === '30-brief-draft.md';
 // Files the hook never records as artifacts.
-export const UNTRACKED = (rel) => rel === STATE_FILE || rel.startsWith('approval/') || rel.startsWith('.') || rel.endsWith('.tmp');
+export const EVENTS_FILE = 'events.jsonl';
+export const UNTRACKED = (rel) => rel === STATE_FILE || rel === EVENTS_FILE || rel.startsWith('approval/') || rel.startsWith('.') || rel.endsWith('.tmp');
 
 const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 
@@ -116,6 +117,7 @@ export function initRun(slug, { simulateFault = null } = {}) {
     gates: {},
     approvals: {},
   });
+  appendEvent(runDir, { type: 'init', run_id: runId, simulate_fault: simulateFault });
   return { run_id: runId, run_dir: `runs/${runId}` };
 }
 
@@ -137,8 +139,10 @@ export function applyWrite(state, runDir, rel, absPath, agent = null) {
   const failed = Object.entries(v.gates).flatMap(([g, r]) => r.findings.map((f) => `${g}: ${f}`));
   const scriptPass = v.result !== 'fail';
   const prev = state.artifacts[rel];
+  const status = !scriptPass ? 'invalid' : NEEDS_GATE_REPORT(rel) ? 'written' : 'valid';
   state.artifacts[rel] = {
-    status: !scriptPass ? 'invalid' : NEEDS_GATE_REPORT(rel) ? 'written' : 'valid',
+    status,
+    valid_at: status === 'valid' ? new Date().toISOString() : prev?.valid_at ?? null,
     sha256: hashFile(absPath),
     attempt: v.attempt,
     agent: agent ?? prev?.agent ?? null,
@@ -150,17 +154,37 @@ export function applyWrite(state, runDir, rel, absPath, agent = null) {
   if (v.type === 'gate') recordGateReport(state, runDir, rel, absPath);
 }
 
+// Append-only audit log of a run: one JSON object per line (launches, writes, gate
+// reports, approvals, engine decisions, guard blocks). session_id shows interruptions.
+export function appendEvent(runDir, event) {
+  try {
+    appendFileSync(join(runDir, EVENTS_FILE), JSON.stringify({ at: new Date().toISOString(), ...event }) + '\n');
+  } catch {} // the log must never break the workflow
+}
+
 // Called by the PostToolUse hook after any write under runs/<run-id>/.
 // Returns the recorded artifact (with its script findings), or null if not a run artifact.
-export function recordWrite(absPath, { agent = null } = {}) {
+export function recordWrite(absPath, { agent = null, sessionId = null } = {}) {
   const loc = locate(absPath);
   if (!loc || UNTRACKED(loc.rel) || !existsSync(absPath)) return null;
   let recorded = null;
   updateState(loc.runDir, (state) => {
     applyWrite(state, loc.runDir, loc.rel, absPath, agent);
     recorded = { rel: loc.rel, ...state.artifacts[loc.rel] };
+    const a = state.artifacts[loc.rel];
+    appendEvent(loc.runDir, { type: 'write', session_id: sessionId, agent, artifact: loc.rel, attempt: a.attempt, status: a.status, ...(a.findings.length ? { findings: a.findings.length } : {}) });
+    const g = state.gates[loc.rel.replace(/^gates\//, '').replace(/\.md$/, '')];
+    if (g && loc.rel.startsWith('gates/')) appendEvent(loc.runDir, { type: 'gate', session_id: sessionId, stage: g.stage, round: g.round, result: g.result, flagged: g.flagged });
   });
   return recorded;
+}
+
+// Called by the launch guard when it lets a workflow subagent start.
+export function recordLaunch(runDir, launch) {
+  updateState(runDir, (state) => {
+    (state.launches ??= []).push({ at: new Date().toISOString(), ...launch });
+  });
+  appendEvent(runDir, { type: 'launch', ...launch });
 }
 
 // Owning agent per artifact path.
@@ -214,6 +238,7 @@ function recordGateReport(state, runDir, rel, absPath) {
       a.flagged_by = { stage, round, report: rel };
     } else if (checked.includes(path) && a.findings.length === 0) {
       a.status = 'valid';
+      a.valid_at = new Date().toISOString();
       delete a.gate_findings;
       delete a.flagged_by;
     }

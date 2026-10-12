@@ -320,9 +320,11 @@ function validateGate(fm, body, runId, s, c) {
 
 // ---------- entry points ----------
 
+// GATE:artifact fails attempt 1 only (retry succeeds); GATE:artifact:always fails every
+// attempt (the gate pass runs out of rounds and the run ends blocked).
 export function parseFault(spec) {
-  const m = String(spec ?? '').match(/^(STRUCTURE|CITATIONS):([a-z-]+)$/);
-  return m ? { gate: m[1], artifact: m[2] } : null;
+  const m = String(spec ?? '').match(/^(STRUCTURE|CITATIONS):([a-z-]+)(:always)?$/);
+  return m ? { gate: m[1], artifact: m[2], always: Boolean(m[3]) } : null;
 }
 
 // absPath: artifact file; returns { artifact, type, attempt, result, gates }.
@@ -347,8 +349,8 @@ export function validateArtifact(absPath, { runDir = dirname(absPath), simulateF
   else if (type === 'gate') validateGate(fm, body, runId, s, c);
 
   const fault = typeof simulateFault === 'string' ? parseFault(simulateFault) : simulateFault;
-  if (fault && fault.artifact === (fm?.artifact ?? type) && result.attempt === 1) {
-    (fault.gate === 'STRUCTURE' ? s : c).push('[injected] simulated failure on attempt 1 (--simulate-fault); fix: re-run the owner');
+  if (fault && fault.artifact === (fm?.artifact ?? type) && (fault.always || result.attempt === 1)) {
+    (fault.gate === 'STRUCTURE' ? s : c).push(`[injected] simulated failure on attempt ${result.attempt} (--simulate-fault${fault.always ? ' …:always' : ''}); fix: re-run the owner`);
   }
 
   result.gates.STRUCTURE = { result: s.length ? 'fail' : 'pass', findings: s };

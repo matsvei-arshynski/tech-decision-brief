@@ -4,7 +4,7 @@
 // which only hooks may write (the PreToolUse guard blocks the model).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { hashFile, RUNS, updateState } from './state.mjs';
+import { appendEvent, hashFile, RUNS, updateState } from './state.mjs';
 
 const MARKER = /^\[tech-brief:(approve|confirm-requirements) run=([\w.-]+) (?:draft|req)=([0-9a-f]{8})\]/;
 const KINDS = {
@@ -30,6 +30,7 @@ function attachFeedback(runId, key, sha8, text) {
     writeFileSync(file, JSON.stringify(record, null, 2) + '\n');
     a.feedback = record.feedback;
     updated = record;
+    appendEvent(runDir, { type: 'feedback', kind: key, record: a.record });
   });
   return updated;
 }
@@ -95,6 +96,7 @@ export function captureApproval(input) {
       };
       history.push({ kind: kind.key, round, decision, valid: record.valid, record: recordRel, at: record.captured_at });
       written.push(record);
+      appendEvent(runDir, { type: 'approval', session_id: record.session_id, kind: kind.key, round, decision, valid: record.valid, record: recordRel });
     });
   }
   return written;

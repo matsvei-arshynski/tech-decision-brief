@@ -24,6 +24,10 @@ your previous `01-requirements.md` and change only what the new answers affect.
 - **Hard constraints:** what the user says must, only, at most or at least, plus fixed
   facts (existing stack, runtime, cloud). Make them measurable. Dimension is one of
   `capability`, `compatibility`, `license`, `cost`, `performance`, `operations`, `maturity`.
+  A hard constraint must be checkable from public sources (docs, package data, pricing,
+  licenses). Something only the team can judge, such as "migration takes at most 6 weeks"
+  or "the team finds it easy", is a preference or a criterion, not a hard constraint;
+  note why under Context.
 - **Preferences:** softer wishes ("prefer", "nice to have").
 - **Decision criteria:** 3–6 criteria, weight 1–5. What the user stressed gets 4–5. Give
   each a dimension from the same list; it decides which researcher must find evidence.

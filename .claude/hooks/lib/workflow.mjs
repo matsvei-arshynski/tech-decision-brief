@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { parseRequirements } from '../../skills/artifact-contract/scripts/validate.mjs';
 import { briefApproved, requirementsConfirmed } from './approval.mjs';
 import {
-  applyWrite, hashFile, OWNER, readState, RUNS, UNTRACKED, withLock, writeState,
+  appendEvent, applyWrite, hashFile, OWNER, readState, RUNS, UNTRACKED, withLock, writeState,
 } from './state.mjs';
 
 const MAX_ROUNDS = 4; // per gate pass: first check + 3 retries
@@ -69,6 +69,13 @@ function gatePass(state, stage) {
   return { nextRound: (all.at(-1)?.round ?? 0) + 1, roundsLeft: MAX_ROUNDS - failed, failed, last: reports.at(-1) ?? null };
 }
 
+// Launches recorded by the launch guard: all of an agent's since a time, or only its
+// fix-retries (prompts carrying "Findings to fix").
+const launchesSince = (state, agent, since) =>
+  (state.launches ?? []).filter((l) => l.agent === agent && l.at > (since ?? '')).length;
+const retriesSince = (state, agent, since) =>
+  (state.launches ?? []).filter((l) => l.agent === agent && l.fixes && l.at > (since ?? '')).length;
+
 // ---------- prompts ----------
 
 const base = (runId, attempt, task) => `Run folder: runs/${runId}\nAttempt: ${attempt}\nTask: ${task}`;
@@ -106,6 +113,11 @@ function decide(state, runDir) {
   const qaNewer = A('00-request.md').written_at > A(REQ).written_at;
   if (qaNewer || A(REQ).status !== 'valid') {
     const fixes = scriptFindings(A(REQ));
+    // Retry limit: re-runs to fix script findings since requirements were last valid.
+    if (!qaNewer && retriesSince(state, OWNER[REQ], A(REQ).valid_at) >= MAX_ROUNDS - 1) {
+      return block(state, runDir, 'requirements', `requirements still fail the script gates after ${MAX_ROUNDS - 1} retries`,
+        fixes.map((f) => ({ ...f, artifact: REQ, owner: OWNER[REQ] })));
+    }
     const prompt = base(runId, nextAttempt(REQ), 'revise') + (fixes.length && !qaNewer ? `\nFindings to fix:\n${findingLines(fixes)}` : '');
     return { stage: 'requirements', launch: [{ subagent_type: OWNER[REQ], prompt }] };
   }
@@ -178,7 +190,13 @@ function decide(state, runDir) {
   const notDone = FINALS.filter((f) => !ok(f));
   if (notDone.length) {
     const fixes = notDone.flatMap((f) => (present(f) ? scriptFindings(A(f)) : []));
-    const attempt = present(FINALS[0]) || present(FINALS[1]) ? 2 : 1;
+    // Retry limit: renderer launches since this draft was approved.
+    const renders = launchesSince(state, 'brief-renderer', ap.at);
+    if (renders >= MAX_ROUNDS) {
+      return block(state, runDir, 'render', `final output still fails the script gates after ${renders} render attempts`,
+        notDone.flatMap((f) => (present(f) ? scriptFindings(A(f)) : [{ gate: 'STRUCTURE', finding: 'not written' }]).map((x) => ({ ...x, artifact: f, owner: 'brief-renderer' }))));
+    }
+    const attempt = renders + 1;
     return { stage: 'render', launch: [{ subagent_type: 'brief-renderer', prompt: base(runId, attempt, attempt > 1 ? 'revise' : 'write') + (fixes.length ? `\nFindings to fix:\n${findingLines(fixes)}` : '') }] };
   }
   return { stage: 'done', final: FINALS.map((f) => `runs/${runId}/${f}`) };
@@ -236,7 +254,17 @@ export function nextStep(runId, { dryRun = false } = {}) {
     const next = decide(state, runDir);
     state.status = STATUS_OF[next.stage] ?? state.status;
     if (next.stage !== 'blocked') state.blocked = null;
-    if (JSON.stringify(state) !== before) writeState(runDir, state); // a finished run stays untouched
+    const changed = JSON.stringify(state) !== before;
+    if (changed) writeState(runDir, state);
+    // Every decision is logged, except asking a finished run again (it stays untouched).
+    if (changed || next.stage !== 'done') {
+      appendEvent(runDir, {
+        type: 'next', stage: next.stage,
+        ...(next.launch ? { launch: next.launch.map((l) => l.subagent_type) } : {}),
+        ...(changes.length ? { changes } : {}),
+        ...(next.reason ? { reason: next.reason } : {}),
+      });
+    }
     const kept = Object.entries(state.artifacts).filter(([, a]) => a.status === 'valid').map(([p]) => p);
     return { run_id: runId, run_status: state.status, simulate_fault: state.simulate_fault, changes, kept, next };
   });

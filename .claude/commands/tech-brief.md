@@ -1,6 +1,6 @@
 ---
 description: Produce a cited Tech Decision Brief for a technology question (coordinator)
-argument-hint: "<question + constraints> [--simulate-fault GATE:artifact] | --resume [run-id]"
+argument-hint: "<question + constraints> [--simulate-fault GATE:artifact[:always]] | --resume [run-id]"
 disable-model-invocation: true
 ---
 
@@ -15,8 +15,9 @@ Input: $ARGUMENTS
 
 - **New run:** pick a slug of 3–6 words from the question and run
   `node .claude/scripts/state.mjs init <slug>`. If the input contains
-  `--simulate-fault <GATE>:<artifact>` (a test flag that makes one script gate fail on
-  attempt 1), add it: `… init <slug> --simulate-fault <GATE>:<artifact>`. Note the `run_id`.
+  `--simulate-fault <GATE>:<artifact>[:always]` (a test flag that makes one script gate
+  fail on attempt 1, or on every attempt with `:always`), pass it on unchanged:
+  `… init <slug> --simulate-fault <value>`. Note the `run_id`.
 - **`--resume [run-id]`:** no init. The first `next` call below picks up the run (the newest
   unfinished one if no id is given) and reports what is kept (`kept`) and what changed on
   disk (`changes`). Tell the user both in two or three lines.

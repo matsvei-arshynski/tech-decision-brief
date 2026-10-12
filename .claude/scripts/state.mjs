@@ -1,5 +1,5 @@
 // Coordinator-facing state CLI. Prints JSON on stdout; exits 1 with a message on error.
-//   node .claude/scripts/state.mjs init <slug> [--simulate-fault GATE:artifact]
+//   node .claude/scripts/state.mjs init <slug> [--simulate-fault GATE:artifact[:always]]
 //   node .claude/scripts/state.mjs hash <file>
 //   node .claude/scripts/state.mjs status <run-id>
 //   node .claude/scripts/state.mjs set-status <run-id> <status> [--reason "<text>"]
@@ -26,8 +26,8 @@ try {
   switch (cmd) {
     case 'init': {
       const fault = option('--simulate-fault');
-      if (fault && !parseFault(fault)) throw new Error('--simulate-fault expects GATE:artifact, e.g. CITATIONS:ecosystem');
-      if (!args.length) throw new Error('usage: init <slug> [--simulate-fault GATE:artifact]');
+      if (fault && !parseFault(fault)) throw new Error('--simulate-fault expects GATE:artifact[:always], e.g. CITATIONS:ecosystem');
+      if (!args.length) throw new Error('usage: init <slug> [--simulate-fault GATE:artifact[:always]]');
       out(initRun(args.join(' '), { simulateFault: fault ? parseFault(fault) : null }));
       break;
     }

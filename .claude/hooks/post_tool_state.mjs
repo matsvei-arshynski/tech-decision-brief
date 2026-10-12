@@ -14,7 +14,7 @@ try {
   const input = JSON.parse(readFileSync(0, 'utf8') || '{}');
   const tool = input.tool_name ?? '';
   if (/^(Write|Edit|MultiEdit)$/.test(tool) && input.tool_input?.file_path) {
-    const a = recordWrite(input.tool_input.file_path, { agent: input.agent_type ?? 'coordinator' });
+    const a = recordWrite(input.tool_input.file_path, { agent: input.agent_type ?? 'coordinator', sessionId: input.session_id ?? null });
     const findings = (a?.findings ?? []).filter((f) => !f.includes('[injected]'));
     if (findings.length) {
       console.log(JSON.stringify({
