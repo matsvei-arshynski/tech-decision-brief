@@ -35,5 +35,5 @@ content farms. A version number or release date must come from an official page
 
 ## Budget
 
-At most about 12 fetches per artifact. Stop when every candidate has a cited answer for
+At most about 20 fetches per artifact. Stop when every candidate has a cited answer for
 every constraint you own, or when the budget runs out (list the gaps under Open issues).

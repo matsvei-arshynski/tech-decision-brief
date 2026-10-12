@@ -1,8 +1,6 @@
 ---
 description: Produce a cited Tech Decision Brief for a technology question (coordinator)
 argument-hint: "<question + constraints> | --resume [run-id]"
-model: sonnet
-effort: medium
 disable-model-invocation: true
 ---
 

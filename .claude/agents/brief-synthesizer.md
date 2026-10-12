@@ -21,6 +21,8 @@ folder and write nothing else.
   dropping a section.
 - Use only facts from the research files, each with its citation. Add no new facts.
 - Candidates in requirements order; criteria sorted by weight (highest first), then name.
+- The Hard constraints table has exactly one row per hard constraint (H1…). Preferences
+  (P1…) belong in section 2 and, where relevant, Risks or Open questions, not in that table.
 - **Constraint status:** `unmet` if any research shows unmet; else `met` if any research
   shows met with evidence; else `unknown`.
 - **Scores:** 1–5 per criterion, each justified by a cited fact. Compute the totals

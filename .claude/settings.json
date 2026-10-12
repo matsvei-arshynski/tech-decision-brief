@@ -1,4 +1,6 @@
 {
+  "model": "sonnet",
+  "effortLevel": "medium",
   "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
@@ -16,7 +18,10 @@
       {
         "matcher": "Write|Edit|MultiEdit|Bash",
         "hooks": [
-          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre_tool_guard.mjs\"" }
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre_tool_guard.mjs\""
+          }
         ]
       }
     ],
@@ -24,7 +29,10 @@
       {
         "matcher": "Write|Edit|MultiEdit|AskUserQuestion",
         "hooks": [
-          { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_tool_state.mjs\"" }
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_tool_state.mjs\""
+          }
         ]
       }
     ]

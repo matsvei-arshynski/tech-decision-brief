@@ -41,4 +41,5 @@ This repo is a Claude Code workflow. Its entry point is `/tech-brief`
   stage; then the run is `blocked` and the failures are reported.
 - Approval is recorded by the PostToolUse hook from the AskUserQuestion answer and is
   tied to the draft's hash. The PreToolUse hook blocks writes to `final/` without it.
-- Subagents run in the background: wait for their completion before running gates.
+- Subagents run in the background; each one hands back a message when it finishes. Start
+  the next group (or a gate) only after every agent of the current group has handed back.
