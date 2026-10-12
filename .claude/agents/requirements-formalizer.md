@@ -1,7 +1,7 @@
 ---
 name: requirements-formalizer
 description: "Turns the raw request and Q&A answers into structured requirements for a tech decision brief."
-tools: Read, Write
+tools: Read, Write, Edit
 skills: artifact-contract
 model: haiku
 effort: medium

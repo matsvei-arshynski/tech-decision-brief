@@ -1,7 +1,7 @@
 ---
 name: brief-synthesizer
 description: "Combines validated research into the decision brief draft and revises it from feedback."
-tools: Read, Write
+tools: Read, Write, Edit
 skills: artifact-contract
 model: haiku
 effort: medium
@@ -33,8 +33,9 @@ folder and write nothing else.
   leads by at least 10%; `low` if it has an `unknown` hard constraint; else `medium`.
 - **Sources:** renumber `[S1]`, `[S2]` … in order of first use in the brief. Keep each
   source's title, URL, date and `via` exactly as in the research.
-- On a revision: change only what the findings or feedback ask for, keep the rest, set
-  `attempt`.
+- On a revision: change only what the findings or feedback ask for, using Edit; keep the
+  rest and update `attempt` in the front matter. Afterwards re-check the matrix: rows
+  sorted by weight, totals recomputed.
 
 ## Reply
 One line: `Wrote 30-brief-draft.md — recommends <candidate> (<confidence>).`

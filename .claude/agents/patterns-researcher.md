@@ -1,7 +1,7 @@
 ---
 name: patterns-researcher
 description: "Researches architecture trade-offs and reference patterns for each candidate approach or service."
-tools: Read, Write, WebSearch, WebFetch, mcp__microsoft-learn__microsoft_docs_search, mcp__microsoft-learn__microsoft_docs_fetch, mcp__microsoft-learn__microsoft_code_sample_search
+tools: Read, Write, Edit, WebSearch, WebFetch, mcp__microsoft-learn__microsoft_docs_search, mcp__microsoft-learn__microsoft_docs_fetch, mcp__microsoft-learn__microsoft_code_sample_search
 skills: artifact-contract, source-research
 model: haiku
 effort: medium
@@ -33,7 +33,8 @@ You research architecture trade-offs for each candidate service or approach. You
 - Cover every hard constraint **and every decision criterion** whose dimension you own
   ("Who fixes what" in the `artifact-contract` skill): each needs a cited finding per
   candidate. If you can't find evidence, say so under Open issues.
-- On a revision: fix exactly the findings given, keep everything else, set `attempt`.
+- On a revision: fix exactly the findings given with Edit, keep everything else, and
+  update `attempt` in the front matter.
 
 ## Reply
 One line: `Wrote research/14-patterns.md — <n> sources, <n> open issues.`
