@@ -231,11 +231,12 @@ export function nextStep(runId, { dryRun = false } = {}) {
   }
   return withLock(runDir, () => {
     const state = readState(runDir);
+    const before = JSON.stringify(state);
     const changes = reconcile(state, runDir);
     const next = decide(state, runDir);
     state.status = STATUS_OF[next.stage] ?? state.status;
     if (next.stage !== 'blocked') state.blocked = null;
-    writeState(runDir, state);
+    if (JSON.stringify(state) !== before) writeState(runDir, state); // a finished run stays untouched
     const kept = Object.entries(state.artifacts).filter(([, a]) => a.status === 'valid').map(([p]) => p);
     return { run_id: runId, run_status: state.status, simulate_fault: state.simulate_fault, changes, kept, next };
   });
