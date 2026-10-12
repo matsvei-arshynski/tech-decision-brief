@@ -164,7 +164,7 @@ Each round:
    Artifacts: <comma-separated artifact paths>
    Question type: <library | architecture>
    ```
-   (`Attempt`/`Task` lines: use `Attempt: <n>` = the round, `Task: write`.)
+   The validator gets only `Run folder` plus these lines: no `Attempt` or `Task` line.
 2. After the hand-back, run `state.mjs status <run-id>` and read the report.
    **The gate passes** when the report says `result: pass` **and** every checked artifact
    has status `valid` in state. Then the gate procedure is done.
