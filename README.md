@@ -76,8 +76,13 @@ Resume re-checks every artifact against its recorded hash and keeps all valid wo
 relaunches only what is missing or invalid, then continues normally. Files you edited by
 hand are kept, but they must pass their gates (and, for the brief, approval) again.
 
-A run that stopped as **blocked** (a gate failed four rounds in a row) resumes once you
-change the requirements: the coordinator asks what to change.
+A run that stopped as **blocked** (a retry limit was reached) resumes once you change the
+requirements: the coordinator asks what to change.
+
+Each run folder has an append-only `events.jsonl`: engine decisions, subagent launches,
+artifact writes, gate results, approvals and guard blocks, each with the Claude Code
+session id. An interruption shows up as a change of session id. Runs recorded before the
+log existed don't have one.
 
 ## Sample runs
 
@@ -86,7 +91,7 @@ request, requirements, plan, research, gate reports, approval records, state and
 
 | Run | Question | What it shows | Outcome |
 |---|---|---|---|
-| [`20261012-2013-hangfire-…`](runs/20261012-2013-hangfire-vs-quartznet-background-jobs/final/decision-brief.md) | Hangfire vs Quartz.NET (library) | Q&A; docs ‖ ecosystem research; brief-gate failures with targeted retries (a research re-run makes the brief stale); **reject → feedback → revise → approve** | Hangfire, high confidence |
+| [`20261012-2013-hangfire-…`](runs/20261012-2013-hangfire-vs-quartznet-background-jobs/final/decision-brief.md) | Hangfire vs Quartz.NET (library) | docs ‖ ecosystem research; brief-gate failures with targeted retries (a research re-run makes the brief stale); **reject → feedback → revise → approve** | Hangfire, high confidence |
 | [`20261012-2038-azure-…`](runs/20261012-2038-azure-service-bus-event-grid-event/final/decision-brief.md) | Service Bus vs Event Grid vs Event Hubs (architecture) | `patterns-researcher` selected instead of ecosystem; Microsoft Learn MCP; two research-gate retries on one researcher | No candidate meets every hard constraint, low confidence |
 | [`20261012-2103-express5-…`](runs/20261012-2103-express5-vs-fastify-node22/final/decision-brief.md) | Express 5 vs Fastify (library) | `--simulate-fault CITATIONS:ecosystem`: injected gate failure → only that researcher re-runs; **session killed mid-run → `--resume`** relaunches only the interrupted agent | Express 5, low confidence |
 | [`20261012-2119-async-python-…`](runs/20261012-2119-async-python-http-client-choice/final/decision-brief.md) | httpx vs aiohttp (library) | Run from a **fresh clone following only this README**: every gate passes first time, no retries | httpx, medium confidence |
@@ -104,7 +109,28 @@ artifact, so the gate → targeted retry → re-check loop can be seen on demand
 ```
 
 `GATE` is `STRUCTURE` or `CITATIONS`; `artifact` is `requirements`, `docs`, `ecosystem`,
-`patterns` or `brief`. The failure is labelled `[injected]` in the gate report.
+`patterns` or `brief`. The failure is labelled `[injected]` in the gate report. Add
+`:always` (for example `CITATIONS:ecosystem:always`) to fail every attempt instead: the
+gate pass runs out of rounds and the run stops as `blocked`, with `gates/UNRESOLVED.md`.
+
+## Tests
+
+```bash
+node --test
+```
+
+About 20 tests (under a minute) run the real CLIs and hook scripts in a throwaway folder,
+using the committed sample runs as fixtures:
+- exact launches and the launch guard;
+- Q&A and change requests;
+- targeted retry, and research gaps found at the brief stage;
+- hash-bound approval;
+- every retry limit, including `:always` blocking;
+- write-time feedback;
+- the ownership and shell guards;
+- the event log, parallel writes, and the script gates.
+
+They need nothing beyond Node.
 
 ## How it works
 
@@ -165,9 +191,19 @@ Each has one job and owns exactly one artifact.
 
 Script-gate failures go straight back to the agent that wrote the file, which fixes them in
 the same attempt. A failed gate report re-runs **only** the owners it names, with their
-findings; artifacts downstream of a re-run become `stale` and are regenerated. Each gate
-pass gets at most 4 rounds (the first check + 3 retries). After that the run stops as
-`blocked` and `gates/UNRESOLVED.md` lists what's open.
+findings; artifacts downstream of a re-run become `stale` and are regenerated.
+
+**Retry limits:**
+
+| Retry path | Limit |
+|---|---|
+| A gate pass (research or brief) | 4 rounds: the first check + 3 retries |
+| Requirements still failing their script gates | 3 retries |
+| Rendering still failing its script gates | 4 render attempts |
+| Reject → revise | No cap: you decide when to stop |
+
+When a limit is reached, the run stops as `blocked`, dependent work doesn't start, and
+`gates/UNRESOLVED.md` lists every open finding with its owner.
 
 ### Approval
 
@@ -182,10 +218,17 @@ approval closes the gate again.
 
 | Hook | File | Does |
 |---|---|---|
-| PostToolUse (Write/Edit) | [post_tool_state.mjs](.claude/hooks/post_tool_state.mjs) | Records each artifact's hash, script-gate results and status in state; applies gate reports; marks dependents stale; reports script failures to the writer |
+| PostToolUse (Write/Edit) | [post_tool_state.mjs](.claude/hooks/post_tool_state.mjs) | Records each artifact's hash, script-gate results and status in state; applies gate reports; marks dependents stale; reports script failures to the writer; logs to `events.jsonl` |
 | PostToolUse (AskUserQuestion) | same | Records approvals and feedback |
-| PreToolUse (Write/Edit/Bash) | [pre_tool_guard.mjs](.claude/hooks/pre_tool_guard.mjs) | Approval gate for `final/` (fails closed); `approval/` and the state file are hook-only |
-| PreToolUse (Agent) | same | A subagent launch must match the engine's expected launch exactly |
+| PreToolUse (Write/Edit) | [pre_tool_guard.mjs](.claude/hooks/pre_tool_guard.mjs) | Approval gate for `final/` (fails closed); **ownership**: each agent writes only its own artifact and the main session only `00-request.md`; `approval/`, the state file and the event log are hook-only |
+| PreToolUse (Bash, PowerShell) | same | A shell command may not mention `final/`, `approval/`, the state file or the event log, unless it is one unchained call of the workflow's own CLI |
+| PreToolUse (Agent) | same | A subagent launch must match the engine's expected launch exactly; allowed launches are recorded, and the retry limits count them |
+
+The shell rule is a pattern match, so it can't catch every way a determined shell command
+could reach those files. The second layer is `permissions.allow` in
+`.claude/settings.json`: it pre-approves only the workflow's own commands, so any other
+shell command asks you first. Running Claude Code in a mode that skips permission prompts
+removes that second layer.
 
 ### Skills
 
@@ -217,7 +260,21 @@ and **Context7** (`resolve-library-id`, `query-docs`). Every source in a brief i
 .mcp.json                       MCP servers
 CLAUDE.md                       workflow and execution rules (loaded by Claude Code)
 runs/                           one folder per run
+tests/                          node --test suite
 ```
+
+## Known limitations and extensions
+
+- **Agent selection is rule-based on the question type.** Library questions get
+  docs + ecosystem; architecture questions get docs + patterns. This mirrors the
+  reference design, where one transport planner is picked by mode. A natural extension:
+  select by the dimensions of the confirmed constraints and criteria, for example a
+  license-and-cost researcher when those dimensions appear.
+- **The HTML gate checks structure only:** section order, no leftover placeholders, the
+  same number of sources as the draft. It doesn't compare the HTML content with the draft.
+- **"Same input, same structure" holds by construction**, through fixed templates, file
+  names, ordering rules and rule-based agent selection. It isn't tested by running the same
+  input twice; the content of a brief varies between runs.
 
 ## Troubleshooting
 

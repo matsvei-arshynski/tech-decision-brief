@@ -39,23 +39,29 @@ Hooks keep the model honest:
 |---|---|
 | PostToolUse on Write/Edit | Records hash + script-gate results in state; applies gate reports; marks downstream artifacts stale; hands script-gate failures straight back to the writing agent |
 | PostToolUse on AskUserQuestion | Records the user's actual answer to `[tech-brief:…]` questions in `approval/` |
-| PreToolUse on Agent | Blocks any subagent launch that isn't exactly what the engine expects next |
-| PreToolUse on Write/Edit/Bash | Blocks `final/` without a valid approval of the current draft; keeps `approval/` and the state file hook-only |
+| PreToolUse on Agent | Blocks any subagent launch that isn't exactly what the engine expects next; records allowed launches (retry limits count them) |
+| PreToolUse on Write/Edit | Blocks `final/` without a valid approval of the current draft; enforces artifact ownership; keeps `approval/`, the state file and `events.jsonl` hook-only |
+| PreToolUse on Bash/PowerShell | Blocks shell commands that mention `final/`, `approval/`, the state file or the event log (except one unchained `state.mjs`/`validate.mjs` call) |
+
+Every hook and engine decision is appended to the run's `events.jsonl` (with session ids).
 
 ## Execution rules
 
 - The coordinator writes only `00-request.md` (request and Q&A). It never writes research
   or brief content, never edits the plan, and never decides the order of work.
 - Every run lives in `runs/<YYYYMMDD-HHMM>-<slug>/`. File names are fixed; agents write
-  only the artifact they own.
+  only the artifact they own (enforced by the guard).
 - Artifacts follow the `artifact-contract` skill. Research follows the `source-research`
   skill; every claim carries an `[Sn]` citation.
-- `workflow-state.json` and `approval/` are written only by hooks and `state.mjs`.
+- `workflow-state.json`, `events.jsonl` and `approval/` are written only by hooks and
+  `state.mjs`.
 - Gates: script gates (STRUCTURE, CITATIONS) on every write, fixed by the writer in place;
   semantic gates (CURRENCY, CONSTRAINT-COVERAGE) by the validator after each research or
   brief write. A failed gate re-runs only the owners it names, with their findings;
-  dependents become `stale`. At most 4 rounds per gate pass (first check + 3 retries);
-  then the run is `blocked` with `gates/UNRESOLVED.md`, until the requirements change.
+  dependents become `stale`.
+- Retry limits: 4 rounds per gate pass (first check + 3 retries); 3 retries for
+  requirements failing their script gates; 4 render attempts. Then the run is `blocked`
+  with `gates/UNRESOLVED.md` until the requirements change. Reject → revise is uncapped.
 - Final output needs a hook-recorded approval of the current draft's hash. A rejection
   is revised (editorial) or sent back through requirements and research (needs research).
 - Subagents run in the background; call `next` again only after every launched agent has
