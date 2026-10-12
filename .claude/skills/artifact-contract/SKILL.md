@@ -37,8 +37,16 @@ attempt: 1
 
 ## Templates
 
-TODO (Phase 3): `templates/requirements.md`, `templates/research.md`,
-`templates/gate-report.md`, `templates/brief.md`, `templates/brief.html`.
+Read the template before writing. Keep every heading exactly as written, in order.
+
+| Artifact | Template |
+|---|---|
+| `01-requirements.md` | `templates/requirements.md` |
+| `research/*.md` | `templates/research.md` |
+| `30-brief-draft.md`, `final/decision-brief.md` | `templates/brief.md` |
+| `final/decision-brief.html` | `templates/brief.html` |
+
+Template paths are relative to this skill's folder: `.claude/skills/artifact-contract/`.
 
 Research artifacts: `# Title`, then `## Summary`, `## Findings` (one `### <Candidate>` per
 candidate, in requirements order), `## Constraint check` (table: Constraint | Candidate |
