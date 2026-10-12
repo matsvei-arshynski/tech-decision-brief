@@ -1,0 +1,16 @@
+{
+  "kind": "brief",
+  "round": 1,
+  "decision": "approved",
+  "valid": true,
+  "answer": "Approve",
+  "feedback": null,
+  "target": "30-brief-draft.md",
+  "target_sha256": "fa5d9a1b930ba5e453c170b5f5f1d470ee40cb58b6e90e1712139ff73332c102",
+  "marker_sha8": "fa5d9a1b",
+  "question": "[tech-brief:approve run=20261012-2103-express5-vs-fastify-node22 draft=fa5d9a1b] Approve this brief for final output?",
+  "tool_use_id": "toolu_01Y2T1CZyNg3J6gEJrgKYKUC",
+  "session_id": "e33d78bc-bba3-45f9-88b3-f115e91abb47",
+  "captured_at": "2026-10-12T19:11:02.767Z",
+  "captured_by": "PostToolUse hook (post_tool_state.mjs)"
+}

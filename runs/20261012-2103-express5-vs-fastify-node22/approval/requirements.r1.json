@@ -1,0 +1,16 @@
+{
+  "kind": "requirements",
+  "round": 1,
+  "decision": "confirmed",
+  "valid": true,
+  "answer": "Confirm",
+  "feedback": null,
+  "target": "01-requirements.md",
+  "target_sha256": "0244c1eaeb769fc6ff67aa5251ceb8b94c84916fce2fd6f6ccf2f6208d005f7a",
+  "marker_sha8": "0244c1ea",
+  "question": "[tech-brief:confirm-requirements run=20261012-2103-express5-vs-fastify-node22 req=0244c1ea] Are these requirements correct?",
+  "tool_use_id": "toolu_01XTyXagqEZUgEkYMcYHp9BW",
+  "session_id": "1b1f35a2-5ceb-4d7b-aba9-bcc4f6d89577",
+  "captured_at": "2026-10-12T19:05:02.930Z",
+  "captured_by": "PostToolUse hook (post_tool_state.mjs)"
+}
