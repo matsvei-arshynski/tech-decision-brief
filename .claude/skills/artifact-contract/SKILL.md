@@ -77,8 +77,9 @@ Source list entry, one per line under `## Sources`:
 ## Quality gates
 
 Script gates run automatically: the PostToolUse hook runs `scripts/validate.mjs` on every
-write under `runs/` and records the result in `workflow-state.json`. To run it yourself:
-`node .claude/skills/artifact-contract/scripts/validate.mjs <artifact-path>`.
+write under `runs/`, records the result in `workflow-state.json`, and reports failures back
+to the agent that wrote the file. Agents don't need a shell for this. (For humans:
+`node .claude/skills/artifact-contract/scripts/validate.mjs <artifact-path>`.)
 
 | Gate | Checked by | Stage | Rule |
 |---|---|---|---|
