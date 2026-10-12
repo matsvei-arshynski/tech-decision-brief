@@ -49,10 +49,7 @@ Input: $ARGUMENTS
 
 ## Stage 0 — Intake
 
-If the input starts with `--resume`: tell the user resume arrives in a later version, and
-stop. <!-- Phase 5 -->
-
-Otherwise:
+If the input starts with `--resume`, go to **Resume** (end of this file). Otherwise:
 1. Pick a slug of 3–6 words from the question and run `state.mjs init <slug>`. If the
    input contains `--simulate-fault <GATE>:<artifact>` (a test flag that makes one script
    gate fail on attempt 1), pass it on: `state.mjs init <slug> --simulate-fault <GATE>:<artifact>`.
@@ -92,8 +89,12 @@ Otherwise:
    - header: `Requirements`
    - options: `Confirm` — "Start research with these requirements"; `Change` — "Tell me what to change"
 
-   On anything but `Confirm`: append the user's answer to Q&A as a change request, launch
-   `requirements-formalizer` (task `revise`), and confirm again.
+   A hook records the user's actual answer. Run `state.mjs status <run-id>` and read
+   `approvals.requirements`; that record decides, not your reading of the answer:
+   - `decision: confirmed`, `valid: true` → Stage 2.
+   - `valid: false` (the file changed after you hashed it) → hash again and ask again.
+   - `decision: change-requested` → append `- **Change request:** <feedback>` to Q&A,
+     launch `requirements-formalizer` (task `revise`), and confirm again.
 
 ## Stage 2 — Plan
 
@@ -180,7 +181,7 @@ Each round:
    `revise`, `Findings to fix: Research updated: <files>. Refresh the affected content.`).
 7. Start the next round.
 
-**Unresolved:** run `state.mjs set-status <run-id> blocked`. Write `gates/UNRESOLVED.md`:
+**Unresolved:** run `state.mjs set-status <run-id> blocked --reason "<stage> gate: <n> rounds failed"`. Write `gates/UNRESOLVED.md`:
 ```
 # Unresolved gate failures
 
@@ -204,18 +205,63 @@ Show the user that table and stop. Do not start any later stage.
    - question: `[tech-brief:approve run=<run-id> draft=<sha8>] Approve this brief for final output?`
    - header: `Approval`
    - options: `Approve` — "Render the final Markdown and HTML"; `Reject` — "Tell me what to change"
-3. On `Approve`: go to Stage 8.
-4. Otherwise, the answer text (or the user's note) is the feedback. Launch
-   `brief-synthesizer` (next attempt, task `revise`) with the extra lines
-   `Research: …` and `Feedback: <feedback, verbatim>`. Then run Stage 6 (a new gate
-   pass, so the retry count starts again) and repeat this stage.
-   <!-- Phase 6: classify feedback (editorial vs needs research). -->
+3. A hook records the user's actual answer in `approval/brief.r<N>.json`, tied to the
+   draft's hash. Run `state.mjs status <run-id>` and read `approvals.brief`; that record
+   decides, not your reading of the answer. The final output can't be written without it:
+   a PreToolUse hook blocks `final/` until the current draft is approved.
+   - `decision: approved`, `valid: true` → Stage 8.
+   - `valid: false` → the draft changed after you hashed it: hash again and ask again.
+   - `decision: rejected` → revise using the recorded `feedback` (step 4).
+4. **Classify the feedback** before revising:
+   - **Needs research** if it adds or removes a candidate, adds or changes a constraint,
+     criterion or weight, or asks for facts the research files don't contain. Then append
+     `- **Change request after review:** <feedback>` to the Q&A of `00-request.md` and go
+     back to Stage 1 step 1 with task `revise` (next attempt). Confirm, re-plan, and
+     continue: the hook marks all research stale when requirements change, so Stage 3
+     re-runs the researchers and every gate runs again.
+   - **Editorial** otherwise (wording, emphasis, structure, more detail from existing
+     research). Launch `brief-synthesizer` (next attempt, task `revise`) with the extra
+     lines `Research: …` and `Feedback: <feedback, verbatim>`. Then run Stage 6 (a new
+     gate pass, so the retry count starts again) and repeat this stage.
+
+   Tell the user which path you took and why, in one line.
 
 ## Stage 8 — Render (status `rendering`)
 
-Launch `brief-renderer` (attempt 1, task `write`). When it hands back, run
+Launch `brief-renderer` (attempt 1, task `write`). If the renderer reports a guard block,
+go back to Stage 7. When it hands back, run
 `state.mjs status <run-id>`: both `final/` files must be `valid`. If not, re-run
 `brief-renderer` once with `Findings to fix:` and their findings; if still invalid, stop
 and report the findings. Then run `state.mjs set-status <run-id> done` and report to the user:
 - the recommendation and confidence (from the Decision section);
 - `runs/<run-id>/final/decision-brief.md` and `runs/<run-id>/final/decision-brief.html`.
+
+## Resume
+
+Input: `--resume [run-id]`. Without a run id, the newest run that isn't done is used.
+
+1. Run `state.mjs resume-plan [run-id]`. It re-hashes every artifact, records anything
+   written but not yet recorded, keeps and re-validates files edited by hand (their
+   dependents become stale), and returns one `next` step. Same files, same answer.
+2. Tell the user, briefly: the run id, what is kept (`kept`), what changed on disk
+   (`changes`), and the next step.
+3. Continue from the stage that `next.stage` names. Use the given agents, attempts,
+   rounds and feedback exactly; never redo work that is `valid`.
+
+   | `next.stage` | Continue with |
+   |---|---|
+   | `intake` | Stage 0 step 2 (the run folder exists; write `00-request.md`) |
+   | `requirements` | Stage 1 step 1 with `next.task` and `next.attempt` (if `next.feedback` is set, first append it to Q&A as a change request) |
+   | `confirm-requirements` | Stage 1 step 3 |
+   | `plan` | Stage 2 |
+   | `research` | Stage 3, launching only `next.agents` (attempts from `next.attempts`, task `write`) |
+   | `research-gate` | Gate procedure, stage `research`, starting at round `next.next_round`. `step: retry` → begin with step 5 for `next.agents`, using the findings in `next.report`; `step: check` → begin with step 1. At most `next.rounds_left` more rounds |
+   | `synthesis` | Stage 5 with `next.task`/`next.attempt` (on `revise`, pass `next.note` as `Findings to fix:`) |
+   | `brief-gate` | Gate procedure, stage `brief`, as for `research-gate` |
+   | `approval` | Stage 7 |
+   | `revise-from-feedback` | Stage 7 step 4, with `next.feedback` |
+   | `render` | Stage 8 |
+   | `blocked` | Show `gates/UNRESOLVED.md`. Ask the user with AskUserQuestion what to change in the requirements; append the answer to Q&A as a change request and continue with Stage 1 step 1 (task `revise`). If they don't want changes, stop |
+   | `done` | Tell the user the run is complete and where the final files are |
+4. Set the run status for that stage with `state.mjs set-status`, then carry on with the
+   normal stages to the end.

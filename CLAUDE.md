@@ -43,3 +43,6 @@ This repo is a Claude Code workflow. Its entry point is `/tech-brief`
   tied to the draft's hash. The PreToolUse hook blocks writes to `final/` without it.
 - Subagents run in the background; each one hands back a message when it finishes. Start
   the next group (or a gate) only after every agent of the current group has handed back.
+- Resume with `/tech-brief --resume [run-id]`. `state.mjs resume-plan` decides the next step
+  from the files and state; valid work is never redone, hand edits are kept but re-checked.
+- A blocked run stays blocked until its requirements change.

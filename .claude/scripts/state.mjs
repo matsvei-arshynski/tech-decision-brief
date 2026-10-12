@@ -2,10 +2,11 @@
 //   node .claude/scripts/state.mjs init <slug> [--simulate-fault GATE:artifact]
 //   node .claude/scripts/state.mjs hash <file>
 //   node .claude/scripts/state.mjs status <run-id>
-//   node .claude/scripts/state.mjs set-status <run-id> <status>
-// Resume (resume-plan) arrives in Phase 5.
+//   node .claude/scripts/state.mjs set-status <run-id> <status> [--reason "<text>"]
+//   node .claude/scripts/state.mjs resume-plan [run-id]     (default: newest run not done)
 import { join, resolve } from 'node:path';
 import { parseFault } from '../skills/artifact-contract/scripts/validate.mjs';
+import { latestOpenRun, resumePlan } from '../hooks/lib/resume.mjs';
 import { hashFile, initRun, readState, ROOT, RUNS, summarize, updateState } from '../hooks/lib/state.mjs';
 
 const RUN_STATUSES = ['intake', 'requirements', 'research', 'synthesis', 'approval', 'rendering', 'done', 'blocked'];
@@ -13,12 +14,16 @@ const RUN_STATUSES = ['intake', 'requirements', 'research', 'synthesis', 'approv
 const args = process.argv.slice(2);
 const cmd = args.shift();
 const out = (obj) => console.log(JSON.stringify(obj, null, 2));
+const runIdArg = (s) => String(s ?? '').replace(/^runs[\\/]/, '').replace(/[\\/]$/, '');
+const option = (name) => {
+  const i = args.indexOf(name);
+  return i >= 0 ? args.splice(i, 2)[1] : null;
+};
 
 try {
   switch (cmd) {
     case 'init': {
-      const fi = args.indexOf('--simulate-fault');
-      const fault = fi >= 0 ? args.splice(fi, 2)[1] : null;
+      const fault = option('--simulate-fault');
       if (fault && !parseFault(fault)) throw new Error('--simulate-fault expects GATE:artifact, e.g. CITATIONS:ecosystem');
       if (!args.length) throw new Error('usage: init <slug> [--simulate-fault GATE:artifact]');
       out(initRun(args.join(' '), { simulateFault: fault ? parseFault(fault) : null }));
@@ -32,17 +37,30 @@ try {
     }
     case 'status': {
       if (!args[0]) throw new Error('usage: status <run-id>');
-      const state = readState(join(RUNS, args[0].replace(/^runs[\\/]/, '')));
+      const state = readState(join(RUNS, runIdArg(args[0])));
       if (!state) throw new Error(`no workflow-state.json for run ${args[0]}`);
       out(summarize(state));
       break;
     }
     case 'set-status': {
+      const reason = option('--reason');
       const [runId, status] = args;
-      if (!RUN_STATUSES.includes(status)) throw new Error(`usage: set-status <run-id> <${RUN_STATUSES.join('|')}>`);
-      const s = updateState(join(RUNS, runId.replace(/^runs[\\/]/, '')), (st) => { st.status = status; });
+      if (!RUN_STATUSES.includes(status)) throw new Error(`usage: set-status <run-id> <${RUN_STATUSES.join('|')}> [--reason "<text>"]`);
+      const s = updateState(join(RUNS, runIdArg(runId)), (st) => {
+        st.status = status;
+        // A blocked run stays blocked until its requirements change (see resume-plan).
+        st.blocked = status === 'blocked'
+          ? { reason, report: 'gates/UNRESOLVED.md', requirements_sha256: st.artifacts['01-requirements.md']?.sha256 ?? null, at: new Date().toISOString() }
+          : null;
+      });
       if (!s) throw new Error(`no workflow-state.json for run ${runId}`);
       out({ run_id: s.run_id, status: s.status });
+      break;
+    }
+    case 'resume-plan': {
+      const runId = args[0] ? runIdArg(args[0]) : latestOpenRun();
+      if (!runId) throw new Error('no unfinished run found under runs/');
+      out(resumePlan(runId));
       break;
     }
     default:

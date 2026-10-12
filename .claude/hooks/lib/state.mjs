@@ -14,14 +14,14 @@ export const STATE_FILE = 'workflow-state.json';
 
 // Artifacts that become stale when the key (or anything under a key ending in "/") is rewritten.
 const DOWNSTREAM = {
-  '01-requirements.md': ['research/', '30-brief-draft.md', 'final/'],
+  '01-requirements.md': ['02-plan.md', 'research/', '30-brief-draft.md', 'final/'],
   'research/': ['30-brief-draft.md', 'final/'],
   '30-brief-draft.md': ['final/'],
 };
 // Artifacts that pass on script gates alone; research and the brief also need a gate report.
 const NEEDS_GATE_REPORT = (rel) => rel.startsWith('research/') || rel === '30-brief-draft.md';
-// Files the hook records only by hash.
-const UNTRACKED = (rel) => rel === STATE_FILE || rel.startsWith('approval/') || rel.endsWith('.tmp');
+// Files the hook never records as artifacts.
+export const UNTRACKED = (rel) => rel === STATE_FILE || rel.startsWith('approval/') || rel.startsWith('.') || rel.endsWith('.tmp');
 
 const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 
@@ -119,7 +119,7 @@ export function initRun(slug, { simulateFault = null } = {}) {
   return { run_id: runId, run_dir: `runs/${runId}` };
 }
 
-function markDownstreamStale(state, rel) {
+export function markDownstreamStale(state, rel) {
   const key = rel.startsWith('research/') ? 'research/' : rel;
   for (const prefix of DOWNSTREAM[key] ?? []) {
     for (const [path, a] of Object.entries(state.artifacts)) {
@@ -131,27 +131,30 @@ function markDownstreamStale(state, rel) {
   }
 }
 
+// Records one artifact in an already-loaded state (caller holds the lock).
+export function applyWrite(state, runDir, rel, absPath, agent = null) {
+  const v = validateArtifact(absPath, { runDir, simulateFault: state.simulate_fault });
+  const failed = Object.entries(v.gates).flatMap(([g, r]) => r.findings.map((f) => `${g}: ${f}`));
+  const scriptPass = v.result !== 'fail';
+  const prev = state.artifacts[rel];
+  state.artifacts[rel] = {
+    status: !scriptPass ? 'invalid' : NEEDS_GATE_REPORT(rel) ? 'written' : 'valid',
+    sha256: hashFile(absPath),
+    attempt: v.attempt,
+    agent: agent ?? prev?.agent ?? null,
+    written_at: new Date().toISOString(),
+    script_gates: Object.fromEntries(Object.entries(v.gates).map(([g, r]) => [g, r.result])),
+    findings: failed,
+  };
+  markDownstreamStale(state, rel);
+  if (v.type === 'gate') recordGateReport(state, runDir, rel, absPath);
+}
+
 // Called by the PostToolUse hook after any write under runs/<run-id>/.
 export function recordWrite(absPath, { agent = null } = {}) {
   const loc = locate(absPath);
   if (!loc || UNTRACKED(loc.rel) || !existsSync(absPath)) return null;
-  return updateState(loc.runDir, (state) => {
-    const v = validateArtifact(absPath, { runDir: loc.runDir, simulateFault: state.simulate_fault });
-    const failed = Object.entries(v.gates).flatMap(([g, r]) => r.findings.map((f) => `${g}: ${f}`));
-    const scriptPass = v.result !== 'fail';
-    const prev = state.artifacts[loc.rel];
-    state.artifacts[loc.rel] = {
-      status: !scriptPass ? 'invalid' : NEEDS_GATE_REPORT(loc.rel) ? 'written' : 'valid',
-      sha256: hashFile(absPath),
-      attempt: v.attempt,
-      agent: agent ?? prev?.agent ?? null,
-      written_at: new Date().toISOString(),
-      script_gates: Object.fromEntries(Object.entries(v.gates).map(([g, r]) => [g, r.result])),
-      findings: failed,
-    };
-    markDownstreamStale(state, loc.rel);
-    if (v.type === 'gate') recordGateReport(state, loc.runDir, loc.rel, absPath);
-  });
+  return updateState(loc.runDir, (state) => applyWrite(state, loc.runDir, loc.rel, absPath, agent));
 }
 
 // A gate report decides valid/invalid for the artifacts it checked (only if they're unchanged).
@@ -178,6 +181,7 @@ function recordGateReport(state, runDir, rel, absPath) {
     round: fm?.round ? Number(fm.round) : null,
     result: fm?.result ?? null,
     report: rel,
+    recorded_at: new Date().toISOString(),
     flagged: [...flagged],
     checked: snapshot,
   };
@@ -196,5 +200,9 @@ export function summarize(state) {
     artifacts: Object.fromEntries(Object.entries(state.artifacts).map(([p, a]) =>
       [p, { status: a.status, attempt: a.attempt, ...(a.findings.length ? { findings: a.findings } : {}), ...(a.stale_because && a.status === 'stale' ? { stale_because: a.stale_because } : {}) }])),
     last_gate: Object.fromEntries(Object.entries(lastGate).map(([s, g]) => [s, { round: g.round, result: g.result, report: g.report }])),
+    approvals: Object.fromEntries(['requirements', 'brief'].filter((k) => state.approvals?.[k]).map((k) => {
+      const a = state.approvals[k];
+      return [k, { round: a.round, decision: a.decision, valid: a.valid, record: a.record, ...(a.feedback ? { feedback: a.feedback } : {}) }];
+    })),
   };
 }
