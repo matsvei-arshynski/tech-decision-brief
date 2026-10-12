@@ -86,7 +86,7 @@ log existed don't have one.
 
 ## Sample runs
 
-Four committed runs show different paths through the workflow. Each folder has the
+Five committed runs show different paths through the workflow. Each folder has the
 request, requirements, plan, research, gate reports, approval records, state and final brief.
 
 | Run | Question | What it shows | Outcome |
@@ -95,9 +95,9 @@ request, requirements, plan, research, gate reports, approval records, state and
 | [`20261012-2119-async-python-…`](runs/20261012-2119-async-python-http-client-choice/final/decision-brief.md) | httpx vs aiohttp (library) | Run from a **fresh clone following only this README**: every gate passes first time, no retries | httpx, medium confidence |
 | [`20261012-2154-azure-…`](runs/20261012-2154-azure-messaging-service-bus-event-grid/final/decision-brief.md) | Service Bus vs Event Grid vs Event Hubs (architecture) | `patterns-researcher` selected instead of ecosystem; Microsoft Learn MCP; **session killed during research → `--resume`**. [`events.jsonl`](runs/20261012-2154-azure-messaging-service-bus-event-grid/events.jsonl) shows the session change and the researchers relaunched | Event Hubs, high confidence |
 | [`20261012-2204-nodejs-logging-…`](runs/20261012-2204-nodejs-logging-pino-vs-winston/gates/UNRESOLVED.md) | pino vs winston (library) | `--simulate-fault CITATIONS:ecosystem:always`: four research-gate rounds, each re-running only the ecosystem researcher, then the run **stops as `blocked`**; no brief is drafted; [`UNRESOLVED.md`](runs/20261012-2204-nodejs-logging-pino-vs-winston/gates/UNRESOLVED.md) reports the open finding | Blocked (by design) |
+| [`20261012-2216-typer-…`](runs/20261012-2216-typer-vs-click-python-cli/final/decision-brief.md) | Typer vs Click (library) | **Reject → feedback → revise → approve**: the rejection and the feedback are in [`approval/brief.r1.json`](runs/20261012-2216-typer-vs-click-python-cli/approval/brief.r1.json); the revised draft passes a fresh brief gate, is approved (`brief.r2.json`), then rendered | Typer, medium confidence |
 
-Runs 3 and 4 have an `events.jsonl`; runs 1 and 2 were recorded before the event log
-existed.
+Runs 3–5 have an `events.jsonl`; runs 1 and 2 were recorded before the event log existed.
 
 ### Testing the failure path
 

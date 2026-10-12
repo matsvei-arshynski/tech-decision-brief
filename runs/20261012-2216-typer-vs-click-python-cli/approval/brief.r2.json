@@ -1,0 +1,16 @@
+{
+  "kind": "brief",
+  "round": 2,
+  "decision": "approved",
+  "valid": true,
+  "answer": "Approve",
+  "feedback": null,
+  "target": "30-brief-draft.md",
+  "target_sha256": "e8d3409a6090b82c4390ca5b05d59f8d841579596c6278a9a8b938329b9f5337",
+  "marker_sha8": "e8d3409a",
+  "question": "[tech-brief:approve run=20261012-2216-typer-vs-click-python-cli draft=e8d3409a] Approve this brief for final output?",
+  "tool_use_id": "toolu_01S6FpVERra1ezrHbGgfxP5K",
+  "session_id": "7df587b4-bc0d-42d7-807b-8160b589eed4",
+  "captured_at": "2026-10-12T20:21:51.098Z",
+  "captured_by": "PostToolUse hook (post_tool_state.mjs)"
+}

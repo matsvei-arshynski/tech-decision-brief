@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tech Decision Brief: Typer vs Click for a Python 3.12 CLI</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --border: #d1d9e0;
+    --accent: #0b5cad; --panel: #f6f8fa; --met: #1a7f37; --unmet: #cf222e; --unknown: #9a6700;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --border: #3d444d;
+      --accent: #58a6ff; --panel: #151b23; --met: #3fb950; --unmet: #f85149; --unknown: #d29922;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  header p { color: var(--muted); margin: 4px 0 16px; font-size: 14px; }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; }
+  h2 { font-size: 21px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 17px; margin: 24px 0 8px; }
+  a { color: var(--accent); }
+  #decision { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 4px 20px 12px; }
+  #decision h2 { border: 0; margin-top: 16px; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 15px; }
+  th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--panel); }
+  .met { color: var(--met); font-weight: 600; }
+  .unmet { color: var(--unmet); font-weight: 600; }
+  .unknown { color: var(--unknown); font-weight: 600; }
+  sup.cite a { text-decoration: none; font-size: 12px; }
+  ol.sources { padding-left: 0; list-style: none; font-size: 14px; }
+  ol.sources li { margin: 4px 0; word-break: break-word; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 13px; }
+  @media print { body { font-size: 12pt; } #decision { break-inside: avoid; } a { color: inherit; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Tech Decision Brief: Typer vs Click for a Python 3.12 CLI</h1>
+    <p>Run 20261012-2216-typer-vs-click-python-cli · 2026-10-12</p>
+  </header>
+  <section id="decision"><h2>1. Decision</h2>
+<p><strong>Recommendation:</strong> Typer · <strong>Confidence:</strong> medium</p>
+<p>Both candidates meet H1 and H2, and Typer has the highest weighted total (56 against 54 for Click). Typer's edge is explicit Python 3.12 classifier evidence<sup class="cite"><a href="#s-1">[S1]</a></sup> and more releases in the last 12 months<sup class="cite"><a href="#s-2">[S2]</a></sup>; Click's edge is zero declared runtime dependencies<sup class="cite"><a href="#s-3">[S3]</a></sup>. The 2-point lead is 3.7%, below the 10% needed for high confidence.</p>
+</section>
+  <section id="context"><h2>2. Context and confirmed requirements</h2>
+<ul>
+<li>Question: Which argument-parsing library, Typer or Click, should a new Python 3.12 command-line tool use?</li>
+<li>Question type: library. Stack: Python 3.12 CLI tool (new project). Team, scale and other context: none stated.</li>
+<li>Assumed: the tool is a standard pip-installable CLI, so the license and Python version constraints apply to the library and its dependencies; only Typer and Click are compared.</li>
+<li>H1: The library's license is MIT or BSD (BSD-2-Clause or BSD-3-Clause), checkable from the package license metadata.</li>
+<li>H2: The library declares support for Python 3.12 in its package metadata (classifiers or a requires-python range that includes 3.12).</li>
+<li>Preferences (P1…): none stated.</li>
+<li>Decision criteria (weight 1–5): Python 3.12 compatibility evidence (4); Command and option capability (3); Dependency footprint (3); Maintenance recency (3).</li>
+</ul>
+</section>
+  <section id="options"><h2>3. Options considered</h2>
+<h3>Typer</h3>
+<p>Typer is an MIT-licensed library<sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-4">[S4]</a></sup> that defines commands and options from Python type hints<sup class="cite"><a href="#s-5">[S5]</a></sup>. Its metadata declares <code>requires-python &gt;=3.10</code> and a Python 3.12 classifier<sup class="cite"><a href="#s-1">[S1]</a></sup>, and Python 3.12 support dates from 0.12.4<sup class="cite"><a href="#s-6">[S6]</a></sup>. Since 0.26.0 Typer vendors Click instead of depending on it<sup class="cite"><a href="#s-7">[S7]</a></sup>, so Click is not a separate install; the requirements describe Click as Typer's engine, which the research does not confirm for the vendored code. The latest stable release is 0.27.3, released 2026-10-06<sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-2">[S2]</a></sup>.</p>
+<h3>Click</h3>
+<p>Click is a BSD-3-Clause toolkit<sup class="cite"><a href="#s-3">[S3]</a></sup><sup class="cite"><a href="#s-8">[S8]</a></sup> that defines commands with decorators such as <code>@click.group()</code> and <code>@cli.command()</code><sup class="cite"><a href="#s-9">[S9]</a></sup>. Its metadata declares <code>requires-python &gt;=3.10</code> but no Python-version classifiers, so its Python 3.12 support rests on the range alone<sup class="cite"><a href="#s-3">[S3]</a></sup><sup class="cite"><a href="#s-10">[S10]</a></sup>. It declares no runtime dependencies<sup class="cite"><a href="#s-3">[S3]</a></sup>. The latest stable release is 8.5.0, dated 2026-08-24 in the changelog<sup class="cite"><a href="#s-11">[S11]</a></sup>, 2026-08-26 on PyPI<sup class="cite"><a href="#s-12">[S12]</a></sup> and 2026-08-27 on GitHub<sup class="cite"><a href="#s-13">[S13]</a></sup>. Shell completion covers Bash, Zsh, Fish and PowerShell, with custom completions through <code>shell_complete</code><sup class="cite"><a href="#s-14">[S14]</a></sup>.</p>
+</section>
+  <section id="matrix"><h2>4. Evaluation matrix</h2>
+<h3>Hard constraints</h3>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Constraint</th><th>Typer</th><th>Click</th></tr>
+</thead>
+<tbody>
+<tr><td>H1 License is MIT or BSD (BSD-2-Clause or BSD-3-Clause)</td><td><span class="met">met</span><sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-4">[S4]</a></sup></td><td><span class="met">met</span><sup class="cite"><a href="#s-3">[S3]</a></sup><sup class="cite"><a href="#s-8">[S8]</a></sup></td></tr>
+<tr><td>H2 Declares Python 3.12 support in package metadata</td><td><span class="met">met</span><sup class="cite"><a href="#s-1">[S1]</a></sup></td><td><span class="met">met</span><sup class="cite"><a href="#s-3">[S3]</a></sup> (range only, no 3.12 classifier)</td></tr>
+</tbody>
+</table>
+</div>
+<h3>Weighted criteria</h3>
+<p>Scores 1–5 (5 = best); total = Σ weight × score.</p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Criterion</th><th>Weight</th><th>Typer</th><th>Click</th></tr>
+</thead>
+<tbody>
+<tr><td>Python 3.12 compatibility evidence (declared support, tested versions)</td><td>4</td><td>5: 3.12 classifier listed; 3.12 support since 0.12.4<sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-6">[S6]</a></sup></td><td>3: version range only, no 3.12 classifier<sup class="cite"><a href="#s-3">[S3]</a></sup><sup class="cite"><a href="#s-10">[S10]</a></sup></td></tr>
+<tr><td>Command and option capability (subcommands, typed options, help output, shell completion)</td><td>3</td><td>4: type-hint options, subcommand groups, built-in completion; shell list not exhaustive<sup class="cite"><a href="#s-5">[S5]</a></sup><sup class="cite"><a href="#s-15">[S15]</a></sup></td><td>5: groups, typed options, <code>chain=True</code>, four named shells, custom completion<sup class="cite"><a href="#s-9">[S9]</a></sup><sup class="cite"><a href="#s-14">[S14]</a></sup></td></tr>
+<tr><td>Dependency footprint (number of runtime dependencies)</td><td>3</td><td>3: three declared runtime dependencies, plus colorama on Windows only<sup class="cite"><a href="#s-1">[S1]</a></sup></td><td>5: no runtime dependencies declared<sup class="cite"><a href="#s-3">[S3]</a></sup></td></tr>
+<tr><td>Maintenance recency (latest stable release date and cadence)</td><td>3</td><td>5: 0.27.3 on 2026-10-06; at least 27 releases in 12 months<sup class="cite"><a href="#s-2">[S2]</a></sup><sup class="cite"><a href="#s-16">[S16]</a></sup></td><td>4: 8.5.0 in August 2026; 7 releases in 12 months<sup class="cite"><a href="#s-13">[S13]</a></sup></td></tr>
+<tr><td><strong>Total</strong></td><td></td><td><strong>56</strong></td><td><strong>54</strong></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+  <section id="recommendation"><h2>5. Recommendation and rationale</h2>
+<p>Typer is recommended, with medium confidence. Both candidates pass H1 and H2, so the weighted total decides, and Typer leads 56 to 54 (3.7%). Typer's lead comes from the Python 3.12 evidence criterion, where it has an explicit classifier and Click has only a version range, and from maintenance recency. Click wins on dependency footprint and on capability, so the margin is small and depends on how much the team values each criterion. Choose Click if dependency footprint matters more than the 3.12 classifier evidence, or if the tool needs Click-specific plug-ins, which Typer no longer supports<sup class="cite"><a href="#s-7">[S7]</a></sup>.</p>
+</section>
+  <section id="risks"><h2>6. Risks and mitigations</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
+</thead>
+<tbody>
+<tr><td>Typer is still in the 0.x series, so its API may change between releases<sup class="cite"><a href="#s-16">[S16]</a></sup></td><td>medium</td><td>medium</td><td>Pin the Typer version and review release notes before upgrading.</td></tr>
+<tr><td>Typer's vendored Click version is unknown, so Click-level behaviour may differ from standalone Click<sup class="cite"><a href="#s-7">[S7]</a></sup></td><td>medium</td><td>medium</td><td>Test the tool's commands, help output and completion on Python 3.12 with the chosen Typer version.</td></tr>
+<tr><td>Typer's transitive dependency tree (for example, rich) was not verified<sup class="cite"><a href="#s-1">[S1]</a></sup></td><td>medium</td><td>low</td><td>Install into a clean Python 3.12 environment and record the resulting tree before committing.</td></tr>
+<tr><td>Click's Python 3.12 support has no classifier and its CI test matrix was not verified<sup class="cite"><a href="#s-3">[S3]</a></sup></td><td>low</td><td>medium</td><td>Run the project's test suite on Python 3.12 before release.</td></tr>
+<tr><td>Click 8.5.0's release date differs across sources<sup class="cite"><a href="#s-11">[S11]</a></sup><sup class="cite"><a href="#s-12">[S12]</a></sup><sup class="cite"><a href="#s-13">[S13]</a></sup></td><td>low</td><td>low</td><td>Confirm the release date on the PyPI release page before citing it.</td></tr>
+<tr><td>Typer's <code>--install-completion</code> shell list is not exhaustive<sup class="cite"><a href="#s-15">[S15]</a></sup></td><td>low</td><td>low</td><td>Check that every shell the users need is supported; Click documents Bash, Zsh, Fish and PowerShell<sup class="cite"><a href="#s-14">[S14]</a></sup>.</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+  <section id="adoption"><h2>7. Adoption plan</h2>
+<ol>
+<li>[ ] Pin Typer 0.27.3, the latest stable release<sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-2">[S2]</a></sup>.</li>
+<li>[ ] In a clean Python 3.12 environment, install the pin and record the dependency tree.</li>
+<li>[ ] Confirm the Click version Typer 0.27.3 vendors.</li>
+<li>[ ] Check help output and shell completion for each shell the tool needs.</li>
+<li>[ ] Build one command group with typed options and run the test suite on Python 3.12.</li>
+</ol>
+</section>
+  <section id="open-questions"><h2>8. Open questions</h2>
+<ul>
+<li>Which Click version does Typer 0.27.3 vendor? The research confirms vendoring since 0.26.0<sup class="cite"><a href="#s-7">[S7]</a></sup> but not the bundled version.</li>
+<li>Does Click's CI test Python 3.12? Its metadata shows only the <code>&gt;=3.10</code> range; the test matrix was not checked<sup class="cite"><a href="#s-3">[S3]</a></sup>.</li>
+<li>The requirements describe Click as Typer's engine, but Typer's current metadata lists no Click dependency<sup class="cite"><a href="#s-16">[S16]</a></sup>.</li>
+<li>Click 8.5.0's release date differs by source (2026-08-24, 2026-08-26, 2026-08-27)<sup class="cite"><a href="#s-11">[S11]</a></sup><sup class="cite"><a href="#s-12">[S12]</a></sup><sup class="cite"><a href="#s-13">[S13]</a></sup>. The scores do not depend on the exact day.</li>
+<li>Transitive dependency counts (for example, for rich) were not verified<sup class="cite"><a href="#s-1">[S1]</a></sup>.</li>
+<li>The lead is 3.7%, and the scores are 1–5 judgments on cited facts, not measurements. A different weighting could change the recommendation.</li>
+<li>Does the tool need Click-only plug-ins? The requirements do not say.</li>
+</ul>
+</section>
+  <section id="sources"><h2>9. Sources</h2>
+<ol class="sources">
+<li id="s-1">[S1] typer 0.27.3 — PyPI JSON metadata — <a href="https://pypi.org/pypi/typer/0.27.3/json">https://pypi.org/pypi/typer/0.27.3/json</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-2">[S2] fastapi/typer releases — GitHub API — <a href="https://api.github.com/repos/fastapi/typer/releases">https://api.github.com/repos/fastapi/typer/releases</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-3">[S3] click 8.5.0 — PyPI JSON metadata — <a href="https://pypi.org/pypi/click/8.5.0/json">https://pypi.org/pypi/click/8.5.0/json</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-4">[S4] Typer LICENSE — <a href="https://github.com/fastapi/typer/blob/master/LICENSE">https://github.com/fastapi/typer/blob/master/LICENSE</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-5">[S5] Typer docs: parameter types and help — <a href="https://typer.tiangolo.com/tutorial/parameter-types">https://typer.tiangolo.com/tutorial/parameter-types</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-6">[S6] Typer release notes (repository) — <a href="https://raw.githubusercontent.com/fastapi/typer/master/docs/release-notes.md">https://raw.githubusercontent.com/fastapi/typer/master/docs/release-notes.md</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-7">[S7] Typer release notes — <a href="https://typer.tiangolo.com/release-notes/">https://typer.tiangolo.com/release-notes/</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-8">[S8] Click LICENSE.txt — <a href="https://github.com/pallets/click/blob/main/LICENSE.txt">https://github.com/pallets/click/blob/main/LICENSE.txt</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-9">[S9] Click docs: groups and commands — <a href="https://click.palletsprojects.com/en/stable/documentation">https://click.palletsprojects.com/en/stable/documentation</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-10">[S10] pallets/click pyproject.toml — <a href="https://raw.githubusercontent.com/pallets/click/main/pyproject.toml">https://raw.githubusercontent.com/pallets/click/main/pyproject.toml</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-11">[S11] Click changelog — <a href="https://click.palletsprojects.com/en/stable/changes/">https://click.palletsprojects.com/en/stable/changes/</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-12">[S12] Click — PyPI JSON metadata — <a href="https://pypi.org/pypi/click/json">https://pypi.org/pypi/click/json</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-13">[S13] pallets/click releases — GitHub API — <a href="https://api.github.com/repos/pallets/click/releases">https://api.github.com/repos/pallets/click/releases</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-14">[S14] Click docs: shell completion — <a href="https://click.palletsprojects.com/en/stable/shell-completion">https://click.palletsprojects.com/en/stable/shell-completion</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-15">[S15] Typer docs: autocompletion — <a href="https://typer.tiangolo.com/tutorial/options-autocompletion/">https://typer.tiangolo.com/tutorial/options-autocompletion/</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-16">[S16] Typer — PyPI JSON metadata — <a href="https://pypi.org/pypi/typer/json">https://pypi.org/pypi/typer/json</a> — retrieved 2026-10-12 — via web</li>
+</ol>
+</section>
+  <footer>Generated by the tech-brief workflow. Approved by a human before rendering.</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "kind": "brief",
+  "round": 1,
+  "decision": "rejected",
+  "valid": true,
+  "answer": "Reject",
+  "feedback": "Make the adoption plan a short numbered checklist",
+  "target": "30-brief-draft.md",
+  "target_sha256": "799418c9bc10ad74f4802842aed37225d344f3aac45e61a4c87b776fe29c1b00",
+  "marker_sha8": "799418c9",
+  "question": "[tech-brief:approve run=20261012-2216-typer-vs-click-python-cli draft=799418c9] Approve this brief for final output?",
+  "tool_use_id": "toolu_017nqEV1xKeohrAtTabSS9BA",
+  "session_id": "7df587b4-bc0d-42d7-807b-8160b589eed4",
+  "captured_at": "2026-10-12T20:21:01.764Z",
+  "captured_by": "PostToolUse hook (post_tool_state.mjs)",
+  "feedback_captured_at": "2026-10-12T20:21:08.997Z"
+}
