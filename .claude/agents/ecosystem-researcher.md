@@ -27,6 +27,9 @@ You research how mature and healthy each candidate library is. You own
   `# Ecosystem and maturity`. One `###` per candidate, named and ordered as in requirements.
 - Constraint check: one row per hard constraint per candidate. Use `n/a` for constraints
   outside license, maturity and compatibility.
+- Cover every hard constraint **and every decision criterion** whose dimension you own
+  ("Who fixes what" in the `artifact-contract` skill): each needs a cited finding per
+  candidate. If you can't find evidence, say so under Open issues.
 - On a revision: fix exactly the findings given, keep everything else, set `attempt`.
 
 ## Reply

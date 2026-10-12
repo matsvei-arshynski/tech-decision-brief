@@ -93,7 +93,8 @@ If the input starts with `--resume`, go to **Resume** (end of this file). Otherw
    `approvals.requirements`; that record decides, not your reading of the answer:
    - `decision: confirmed`, `valid: true` → Stage 2.
    - `valid: false` (the file changed after you hashed it) → hash again and ask again.
-   - `decision: change-requested` → append `- **Change request:** <feedback>` to Q&A,
+   - `decision: change-requested` → if the record has no `feedback`, ask the follow-up
+     question below (with `req=<sha8>`). Then append `- **Change request:** <feedback>` to Q&A,
      launch `requirements-formalizer` (task `revise`), and confirm again.
 
 ## Stage 2 — Plan
@@ -211,7 +212,16 @@ Show the user that table and stop. Do not start any later stage.
    a PreToolUse hook blocks `final/` until the current draft is approved.
    - `decision: approved`, `valid: true` → Stage 8.
    - `valid: false` → the draft changed after you hashed it: hash again and ask again.
-   - `decision: rejected` → revise using the recorded `feedback` (step 4).
+   - `decision: rejected` → if the record has no `feedback`, ask the follow-up question
+     below. Then revise using the recorded `feedback` (step 4).
+
+   **Follow-up question** (the hook attaches the answer to the record):
+   - question: `[tech-brief:feedback run=<run-id> draft=<sha8>] What should change?`
+     (same sha8 as the question just answered; `req=<sha8>` for requirements)
+   - header: `Feedback`
+   - options: `Wording or structure` — "Describe it in your answer"; `Research or scope` — "Describe it in your answer"
+
+   Then read the feedback from `state.mjs status`, not from your own reading.
 4. **Classify the feedback** before revising:
    - **Needs research** if it adds or removes a candidate, adds or changes a constraint,
      criterion or weight, or asks for facts the research files don't contain. Then append
@@ -259,7 +269,7 @@ Input: `--resume [run-id]`. Without a run id, the newest run that isn't done is 
    | `synthesis` | Stage 5 with `next.task`/`next.attempt` (on `revise`, pass `next.note` as `Findings to fix:`) |
    | `brief-gate` | Gate procedure, stage `brief`, as for `research-gate` |
    | `approval` | Stage 7 |
-   | `revise-from-feedback` | Stage 7 step 4, with `next.feedback` |
+   | `revise-from-feedback` | Stage 7 step 4, with `next.feedback` (if it's empty, first ask the follow-up question from Stage 7 step 3) |
    | `render` | Stage 8 |
    | `blocked` | Show `gates/UNRESOLVED.md`. Ask the user with AskUserQuestion what to change in the requirements; append the answer to Q&A as a change request and continue with Stage 1 step 1 (task `revise`). If they don't want changes, stop |
    | `done` | Tell the user the run is complete and where the final files are |

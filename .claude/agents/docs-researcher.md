@@ -29,6 +29,9 @@ the run folder and write nothing else.
   `# Official documentation`. One `###` per candidate, named and ordered as in requirements.
 - Constraint check: one row per hard constraint per candidate. Use `n/a` when your
   research doesn't cover that constraint.
+- Cover every hard constraint **and every decision criterion** whose dimension you own
+  ("Who fixes what" in the `artifact-contract` skill): each needs a cited finding per
+  candidate. If you can't find evidence, say so under Open issues.
 - On a revision: fix exactly the findings given, keep everything else, set `attempt`.
 
 ## Reply

@@ -25,7 +25,10 @@ your previous `01-requirements.md` and change only what the new answers affect.
   facts (existing stack, runtime, cloud). Make them measurable. Dimension is one of
   `capability`, `compatibility`, `license`, `cost`, `performance`, `operations`, `maturity`.
 - **Preferences:** softer wishes ("prefer", "nice to have").
-- **Decision criteria:** 3–6 criteria, weight 1–5. What the user stressed gets 4–5.
+- **Decision criteria:** 3–6 criteria, weight 1–5. What the user stressed gets 4–5. Give
+  each a dimension from the same list; it decides which researcher must find evidence.
+  Only use criteria that public documentation or package data can evidence (no
+  benchmarks you'd have to run yourself).
 - **Open questions:** only what would change the recommendation and can't be reasonably
   assumed. At most 4, each with 2–4 suggested options. Anything you assume instead goes
   under Context as `Assumed: …`. Write `None.` when nothing is missing.

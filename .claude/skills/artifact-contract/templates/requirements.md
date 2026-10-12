@@ -33,9 +33,9 @@ attempt: <n>
 | P1 | <nice-to-have> |
 
 ## Decision criteria
-| Criterion | Weight (1–5) | Why it matters |
-|---|---|---|
-| <criterion> | <1–5> | <reason> |
+| Criterion | Weight (1–5) | Dimension | Why it matters |
+|---|---|---|---|
+| <criterion> | <1–5> | <dimension> | <reason> |
 
 ## Open questions
 <"None." or a numbered list:>

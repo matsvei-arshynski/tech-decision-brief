@@ -26,7 +26,9 @@ prompt (`gates/<stage>.r<N>.md`) and write nothing else. Never edit the artifact
    - `brief` stage: CONSTRAINT-COVERAGE (brief rules). Set CURRENCY to `n/a`.
 4. Name one owner per finding, following "Who fixes what" in the skill. Owners are agent
    names: requirements-formalizer, docs-researcher, ecosystem-researcher,
-   patterns-researcher, brief-synthesizer.
+   patterns-researcher, brief-synthesizer. At the brief stage, ask for each finding:
+   could the synthesizer fix it from the research as it stands? If not, the owner is
+   the researcher for the dimension (from the requirements tables), never the synthesizer.
 5. Write the report with `templates/gate-report.md`. `result: pass` only when there are no
    findings at all; then Findings is `None.`.
 

@@ -96,7 +96,7 @@ export function parseRequirements(text) {
   const hard = tableRows(s.get('Hard constraints') ?? '').slice(1)
     .filter((r) => /^H\d+$/.test(r[0])).map((r) => ({ id: r[0], text: r[1], dimension: (r[2] ?? '').toLowerCase() }));
   const criteria = tableRows(s.get('Decision criteria') ?? '').slice(1)
-    .map((r) => ({ name: r[0], weight: Number(r[1]) }));
+    .map((r) => ({ name: r[0], weight: Number(r[1]), dimension: (r[2] ?? '').toLowerCase() }));
   return {
     questionType: firstLine(s.get('Question type')).toLowerCase(),
     candidates, hard, criteria,
@@ -181,6 +181,7 @@ function validateRequirements(fm, body, runId, s, c) {
   for (const h of req.hard) if (!DIMENSIONS.includes(h.dimension)) s.push(`Hard constraints: ${h.id} has dimension "${h.dimension}", expected one of ${DIMENSIONS.join(', ')}`);
   if (req.criteria.length === 0) s.push('Decision criteria: no rows');
   for (const k of req.criteria) if (!(k.weight >= 1 && k.weight <= 5)) s.push(`Decision criteria: "${k.name}" weight must be 1–5`);
+  for (const k of req.criteria) if (!DIMENSIONS.includes(k.dimension)) s.push(`Decision criteria: "${k.name}" has dimension "${k.dimension}", expected one of ${DIMENSIONS.join(', ')}`);
   c.na = true;
 }
 

@@ -85,7 +85,7 @@ write under `runs/` and records the result in `workflow-state.json`. To run it y
 | STRUCTURE | script | all | Front matter; exact headings in order; candidate subsections match requirements; one Constraint check row per hard constraint × candidate; brief matrix shape, sorting and correct totals |
 | CITATIONS | script | research, brief | Source lines in the fixed format, numbered S1…Sn; every `[Sn]` defined and every source cited; every Findings bullet cited; every matrix score cited; every brief source comes from the research |
 | CURRENCY | validator | research | Library: each candidate's latest stable version **and** its release date are stated and cited. Architecture: each candidate's GA status and relevant tier are stated and cited |
-| CONSTRAINT-COVERAGE | validator | research | Every hard constraint × candidate pair is met / unmet / unknown in at least one research artifact (not `n/a` everywhere) |
+| CONSTRAINT-COVERAGE | validator | research | Every hard constraint × candidate pair is met / unmet / unknown in at least one research artifact (not `n/a` everywhere), **and** every decision criterion × candidate pair has at least one cited finding to score it on |
 | CONSTRAINT-COVERAGE | validator | brief | (a) Brief statuses follow the merge rule over the research (unmet if any unmet, else met if any met, else unknown); (b) the recommended option has no `unmet`; (c) if it has an `unknown`, confidence is `low` and the gap is listed under Open questions |
 
 ## Who fixes what
@@ -95,13 +95,17 @@ Each finding names one owner: the agent that owns the artifact to change.
 - STRUCTURE, CITATIONS: the owner of the failing artifact.
 - CURRENCY: `docs-researcher` for versions and GA status; `ecosystem-researcher` for release
   dates when it was selected.
-- CONSTRAINT-COVERAGE at the research stage: the researcher for the constraint's dimension.
+- CONSTRAINT-COVERAGE at the research stage: the researcher for the constraint's or
+  criterion's dimension.
 
   | Dimension | Library question | Architecture question |
   |---|---|---|
   | capability, compatibility, cost | docs-researcher | docs-researcher |
   | license, maturity | ecosystem-researcher | docs-researcher |
   | performance, operations | docs-researcher | patterns-researcher |
-- CONSTRAINT-COVERAGE at the brief stage: `brief-synthesizer`.
+- Brief stage: `brief-synthesizer` when the fix only needs what the research already
+  contains. When it needs evidence the research lacks (a score or status no research
+  finding supports), the owner is the **researcher for that dimension**: re-writing the
+  brief can't fix a research gap.
 
 Self-check before you return: run through the STRUCTURE and CITATIONS rules yourself.

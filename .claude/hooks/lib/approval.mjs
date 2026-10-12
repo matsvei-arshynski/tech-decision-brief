@@ -2,7 +2,7 @@
 // AskUserQuestion tool input/response from the harness: the answer recorded is what the
 // user actually selected, not what the model reports. Records go to approval/*.json,
 // which only hooks may write (the PreToolUse guard blocks the model).
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { hashFile, RUNS, updateState } from './state.mjs';
 
@@ -12,6 +12,28 @@ const KINDS = {
   'confirm-requirements': { key: 'requirements', file: '01-requirements.md', yes: 'Confirm', yesDecision: 'confirmed', noDecision: 'change-requested' },
 };
 
+// Follow-up question asking for the feedback behind a reject / change request.
+const FEEDBACK_MARKER = /^\[tech-brief:feedback run=([\w.-]+) (draft|req)=([0-9a-f]{8})\]/;
+
+// Adds feedback to the latest rejection (or change request) of the same file version.
+function attachFeedback(runId, key, sha8, text) {
+  const runDir = join(RUNS, runId);
+  if (!text || !existsSync(join(runDir, 'workflow-state.json'))) return null;
+  let updated = null;
+  updateState(runDir, (state) => {
+    const a = state.approvals?.[key];
+    if (!a || !['rejected', 'change-requested'].includes(a.decision) || !a.sha256?.startsWith(sha8)) return;
+    const file = join(runDir, a.record);
+    const record = JSON.parse(readFileSync(file, 'utf8'));
+    record.feedback = [record.feedback, text].filter(Boolean).join('\n');
+    record.feedback_captured_at = new Date().toISOString();
+    writeFileSync(file, JSON.stringify(record, null, 2) + '\n');
+    a.feedback = record.feedback;
+    updated = record;
+  });
+  return updated;
+}
+
 // Returns the records written (one per marked question), or [] when nothing applies.
 export function captureApproval(input) {
   const questions = input.tool_input?.questions ?? [];
@@ -20,6 +42,13 @@ export function captureApproval(input) {
   const written = [];
 
   for (const q of questions) {
+    const fb = String(q.question ?? '').match(FEEDBACK_MARKER);
+    if (fb) {
+      const text = [answers[q.question], annotations[q.question]?.notes].filter(Boolean).join('\n');
+      const rec = attachFeedback(fb[1], fb[2] === 'draft' ? 'brief' : 'requirements', fb[3], text);
+      if (rec) written.push(rec);
+      continue;
+    }
     const m = String(q.question ?? '').match(MARKER);
     if (!m) continue;
     const [, kindName, runId, sha8] = m;
