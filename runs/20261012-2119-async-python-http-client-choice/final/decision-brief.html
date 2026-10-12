@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tech Decision Brief: httpx or aiohttp for the async Python 3.12 service</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --border: #d1d9e0;
+    --accent: #0b5cad; --panel: #f6f8fa; --met: #1a7f37; --unmet: #cf222e; --unknown: #9a6700;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --border: #3d444d;
+      --accent: #58a6ff; --panel: #151b23; --met: #3fb950; --unmet: #f85149; --unknown: #d29922;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 16px 64px; }
+  header { border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  header p { color: var(--muted); margin: 4px 0 16px; font-size: 14px; }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; }
+  h2 { font-size: 21px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 17px; margin: 24px 0 8px; }
+  a { color: var(--accent); }
+  #decision { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 4px 20px 12px; }
+  #decision h2 { border: 0; margin-top: 16px; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 15px; }
+  th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--panel); }
+  .met { color: var(--met); font-weight: 600; }
+  .unmet { color: var(--unmet); font-weight: 600; }
+  .unknown { color: var(--unknown); font-weight: 600; }
+  sup.cite a { text-decoration: none; font-size: 12px; }
+  ol.sources { padding-left: 0; list-style: none; font-size: 14px; }
+  ol.sources li { margin: 4px 0; word-break: break-word; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 13px; }
+  @media print { body { font-size: 12pt; } #decision { break-inside: avoid; } a { color: inherit; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Tech Decision Brief: httpx or aiohttp for the async Python 3.12 service</h1>
+    <p>Run 20261012-2119-async-python-http-client-choice · 2026-10-12</p>
+  </header>
+  <section id="decision"><h2>1. Decision</h2>
+<p><strong>Recommendation:</strong> httpx · <strong>Confidence:</strong> medium</p>
+<p>httpx meets all three hard constraints and has the higher weighted total, 54 against 50 for aiohttp. It leads on license evidence and dependency footprint, while aiohttp leads on release recency and maintenance activity. The 4-point gap is under 10%, so confidence is medium.</p></section>
+  <section id="context"><h2>2. Context and confirmed requirements</h2>
+<ul>
+<li><strong>Question:</strong> Which HTTP client library should the new async Python 3.12 service use: httpx or aiohttp?</li>
+<li><strong>Question type:</strong> library</li>
+<li><strong>Candidates:</strong> httpx; aiohttp.</li>
+<li><strong>Context:</strong> Stack is Python 3.12 and asyncio for a new async service; no other stack stated. Team, scale and other context: none stated.</li>
+<li><strong>Assumptions:</strong> the library is used as an HTTP client only (aiohttp's server role is out of scope); the license constraint applies to the library's own license, and transitive dependency licenses are reported as information, not pass/fail; no existing codebase or team skills, so no preference is inferred.</li>
+<li><strong>H1:</strong> Provides an asyncio-native client API: requests are issued with <code>async</code>/<code>await</code> inside an asyncio event loop.</li>
+<li><strong>H2:</strong> Supports CPython 3.12 (stated in the release metadata or the official docs).</li>
+<li><strong>H3:</strong> The library's license is only MIT, BSD (2-clause or 3-clause) or Apache-2.0.</li>
+<li><strong>Preferences:</strong> None stated.</li>
+</ul></section>
+  <section id="options"><h2>3. Options considered</h2>
+<h3>httpx</h3>
+<p>httpx 0.28.1 is the latest stable release, uploaded 2024-12-06 and declared for CPython 3.12 <sup class="cite"><a href="#s-1">[S1]</a></sup>. <code>httpx.AsyncClient</code> is used with <code>async</code>/<code>await</code> <sup class="cite"><a href="#s-2">[S2]</a></sup>, with four timeout types (connect, read, write, pool) <sup class="cite"><a href="#s-3">[S3]</a></sup> and pool limits of <code>max_connections</code> 100 and <code>max_keepalive_connections</code> 20 by default <sup class="cite"><a href="#s-4">[S4]</a></sup>. Its transport retry covers only connect errors and connect timeouts <sup class="cite"><a href="#s-5">[S5]</a></sup>, and read, write or 503 retries need a general tool such as tenacity <sup class="cite"><a href="#s-2">[S2]</a></sup>. No stable release has followed 2024-12-06 <sup class="cite"><a href="#s-6">[S6]</a></sup>, although the repository was last pushed on 2026-10-02 <sup class="cite"><a href="#s-7">[S7]</a></sup>. The license is BSD-3-Clause in the metadata <sup class="cite"><a href="#s-1">[S1]</a></sup> and in the LICENSE.md file <sup class="cite"><a href="#s-8">[S8]</a></sup>.</p>
+<h3>aiohttp</h3>
+<p>aiohttp 3.14.5 is the latest stable release, published on GitHub on 2026-10-11 <sup class="cite"><a href="#s-9">[S9]</a></sup>. Its PyPI metadata declares <code>requires_python &gt;=3.10</code> and a Python 3.12 classifier <sup class="cite"><a href="#s-10">[S10]</a></sup>. <code>aiohttp.ClientSession</code> is used with <code>async with</code> inside asyncio <sup class="cite"><a href="#s-11">[S11]</a></sup>, and <code>aiohttp.ClientTimeout</code> has total, connect, sock_connect and sock_read fields <sup class="cite"><a href="#s-12">[S12]</a></sup>. The session has no retry parameter; it automatically retries closed connections for idempotent methods (#7297) <sup class="cite"><a href="#s-13">[S13]</a></sup>, and a user-written retry middleware is shown in the cookbook <sup class="cite"><a href="#s-14">[S14]</a></sup>. The PyPI license field is empty and the license expression is Apache-2.0 AND MIT <sup class="cite"><a href="#s-10">[S10]</a></sup>; LICENSE.txt is Apache 2.0 <sup class="cite"><a href="#s-15">[S15]</a></sup>. The project shipped 11 version releases in the 12 months before 2026-10-12 <sup class="cite"><a href="#s-16">[S16]</a></sup> and was last pushed on 2026-10-12 <sup class="cite"><a href="#s-17">[S17]</a></sup>.</p></section>
+  <section id="matrix"><h2>4. Evaluation matrix</h2>
+<h3>Hard constraints</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Constraint</th><th>httpx</th><th>aiohttp</th></tr></thead>
+<tbody>
+<tr><td>H1 Asyncio-native client API (<code>async</code>/<code>await</code> in an event loop)</td><td><span class="met">met</span> <sup class="cite"><a href="#s-2">[S2]</a></sup></td><td><span class="met">met</span> <sup class="cite"><a href="#s-11">[S11]</a></sup></td></tr>
+<tr><td>H2 Supports CPython 3.12</td><td><span class="met">met</span> <sup class="cite"><a href="#s-1">[S1]</a></sup></td><td><span class="met">met</span> <sup class="cite"><a href="#s-10">[S10]</a></sup></td></tr>
+<tr><td>H3 License only MIT, BSD (2/3-clause) or Apache-2.0</td><td><span class="met">met</span> <sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-8">[S8]</a></sup></td><td><span class="met">met</span> <sup class="cite"><a href="#s-10">[S10]</a></sup><sup class="cite"><a href="#s-15">[S15]</a></sup></td></tr>
+</tbody>
+</table></div>
+<h3>Weighted criteria</h3>
+<p>Scores 1–5 (5 = best); total = Σ weight × score.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Criterion</th><th>Weight</th><th>httpx</th><th>aiohttp</th></tr></thead>
+<tbody>
+<tr><td>Async client API with timeout, connection pooling and retry control</td><td>5</td><td>4 <sup class="cite"><a href="#s-2">[S2]</a></sup><sup class="cite"><a href="#s-3">[S3]</a></sup><sup class="cite"><a href="#s-4">[S4]</a></sup><sup class="cite"><a href="#s-5">[S5]</a></sup></td><td>3 <sup class="cite"><a href="#s-11">[S11]</a></sup><sup class="cite"><a href="#s-12">[S12]</a></sup><sup class="cite"><a href="#s-13">[S13]</a></sup><sup class="cite"><a href="#s-14">[S14]</a></sup></td></tr>
+<tr><td>License declared in package metadata and the upstream license file</td><td>4</td><td>5 <sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-8">[S8]</a></sup></td><td>4 <sup class="cite"><a href="#s-10">[S10]</a></sup><sup class="cite"><a href="#s-15">[S15]</a></sup></td></tr>
+<tr><td>Latest stable release and maintenance activity</td><td>3</td><td>2 <sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-6">[S6]</a></sup><sup class="cite"><a href="#s-7">[S7]</a></sup></td><td>5 <sup class="cite"><a href="#s-9">[S9]</a></sup><sup class="cite"><a href="#s-16">[S16]</a></sup><sup class="cite"><a href="#s-17">[S17]</a></sup></td></tr>
+<tr><td>Runtime dependency footprint</td><td>2</td><td>4 <sup class="cite"><a href="#s-1">[S1]</a></sup></td><td>2 <sup class="cite"><a href="#s-10">[S10]</a></sup></td></tr>
+<tr><td><strong>Total</strong></td><td></td><td><strong>54</strong></td><td><strong>50</strong></td></tr>
+</tbody>
+</table></div></section>
+  <section id="recommendation"><h2>5. Recommendation and rationale</h2>
+<p>httpx is recommended because it has the higher weighted total (54 against 50) and no hard constraint is unmet. All three hard constraints are met for both candidates, so the weighted criteria decided the choice. On the weight-5 criterion, httpx scores 4 because it offers a built-in transport retry knob and granular timeouts <sup class="cite"><a href="#s-3">[S3]</a></sup><sup class="cite"><a href="#s-5">[S5]</a></sup>, while aiohttp scores 3 because its session has no retry parameter and needs middleware <sup class="cite"><a href="#s-13">[S13]</a></sup><sup class="cite"><a href="#s-14">[S14]</a></sup>. On the weight-4 license criterion, httpx scores 5 because its BSD-3-Clause license is declared in the metadata and in the LICENSE file <sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-8">[S8]</a></sup>; aiohttp scores 4 because its metadata license field is empty and the MIT part of its expression was not traced <sup class="cite"><a href="#s-10">[S10]</a></sup>. On the weight-3 maturity criterion, aiohttp scores 5 against 2 for httpx, because httpx has no stable release since 2024-12-06 <sup class="cite"><a href="#s-6">[S6]</a></sup> while aiohttp released 3.14.5 on 2026-10-11 <sup class="cite"><a href="#s-9">[S9]</a></sup>. On the weight-2 dependency criterion, httpx scores 4 with four unconditional direct requirements <sup class="cite"><a href="#s-1">[S1]</a></sup>, and aiohttp scores 2 with seven unconditional and two conditional ones <sup class="cite"><a href="#s-10">[S10]</a></sup>. The margin is 4 points (8% of the aiohttp total), so confidence is medium. Choose aiohttp instead if the maturity criterion carries more weight than the capability and license evidence, or if the team requires a library with a recent stable release.</p></section>
+  <section id="risks"><h2>6. Risks and mitigations</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead>
+<tbody>
+<tr><td>httpx has had no stable release since 2024-12-06 <sup class="cite"><a href="#s-6">[S6]</a></sup></td><td>medium</td><td>medium</td><td>Pin httpx 0.28.1 and track upstream activity; confirm pre-release status before any upgrade.</td></tr>
+<tr><td>httpx transport retry covers connect errors only <sup class="cite"><a href="#s-5">[S5]</a></sup></td><td>high</td><td>medium</td><td>Add a retry wrapper for read, write and 503 cases, such as tenacity <sup class="cite"><a href="#s-2">[S2]</a></sup>.</td></tr>
+<tr><td>aiohttp session has no retry parameter; automatic retry covers closed idempotent connections only <sup class="cite"><a href="#s-13">[S13]</a></sup></td><td>medium</td><td>low</td><td>Add a retry middleware as shown in the cookbook <sup class="cite"><a href="#s-14">[S14]</a></sup>.</td></tr>
+<tr><td>aiohttp PyPI license field is empty and the MIT part of Apache-2.0 AND MIT is not traced <sup class="cite"><a href="#s-10">[S10]</a></sup></td><td>low</td><td>low</td><td>Check the license files in the installed package before distribution.</td></tr>
+<tr><td>aiohttp has 7 unconditional direct dependencies plus 2 conditional ones <sup class="cite"><a href="#s-10">[S10]</a></sup></td><td>high</td><td>low</td><td>Audit the dependency set and pin versions in the lock file.</td></tr>
+<tr><td>The margin is small (4 points, 8%), so a change in scores or weights could reverse the result</td><td>medium</td><td>medium</td><td>Review the maturity and API scores with the team before adoption.</td></tr>
+</tbody>
+</table></div></section>
+  <section id="adoption"><h2>7. Adoption plan</h2>
+<ol>
+<li>Pin httpx 0.28.1 in the lock file and keep the license evidence (package metadata and LICENSE.md) with the dependency record.</li>
+<li>Create one long-lived <code>httpx.AsyncClient</code> for the service, with explicit <code>httpx.Timeout</code> and <code>httpx.Limits</code> values.</li>
+<li>Set transport <code>retries</code> for connect errors, and add a retry wrapper for read, write and 503 cases.</li>
+<li>Before the first upgrade decision, check the PyPI release history and the upstream release activity.</li>
+<li>Record transitive dependency licenses as information only, as the requirements state.</li>
+</ol></section>
+  <section id="open-questions"><h2>8. Open questions</h2>
+<ul>
+<li>The aiohttp 3.14.5 release date differs: GitHub gives 2026-10-11 <sup class="cite"><a href="#s-9">[S9]</a></sup> and the changelog gives 2026-10-10 <sup class="cite"><a href="#s-16">[S16]</a></sup>. This brief uses the GitHub date.</li>
+<li>The aiohttp version that introduced automatic retry of closed connections (#7297) is unconfirmed <sup class="cite"><a href="#s-13">[S13]</a></sup>.</li>
+<li>The MIT component of aiohttp's license expression was not traced to a file or dependency <sup class="cite"><a href="#s-10">[S10]</a></sup>.</li>
+<li>httpx's PyPI release history lists pre-release dates that are inconsistent with each other; 0.28.1 remains the latest stable version, but pre-release status needs a direct check.</li>
+<li>Whether httpx's lack of a stable release since 2024-12-06 <sup class="cite"><a href="#s-6">[S6]</a></sup>, despite recent repository pushes <sup class="cite"><a href="#s-7">[S7]</a></sup>, counts as healthy maintenance is a judgement the sources do not settle.</li>
+<li>The transitive dependency closure was not fetched for either library; dependency counts are direct requirements only <sup class="cite"><a href="#s-1">[S1]</a></sup><sup class="cite"><a href="#s-10">[S10]</a></sup>.</li>
+<li>No LTS or end-of-support policy was found for either project.</li>
+<li>Paid or commercial editions were not checked on official pages for either candidate.</li>
+<li>Current active maintainer counts are not available; contributor totals are all-time figures.</li>
+</ul></section>
+  <section id="sources"><h2>9. Sources</h2>
+<ol class="sources">
+<li id="s-1">[S1] httpx — PyPI JSON metadata — <a href="https://pypi.org/pypi/httpx/json">https://pypi.org/pypi/httpx/json</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-2">[S2] HTTPX — Async support (docs/async.md) — <a href="https://github.com/encode/httpx/blob/master/docs/async.md">https://github.com/encode/httpx/blob/master/docs/async.md</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-3">[S3] HTTPX — Timeouts (docs/advanced/timeouts.md) — <a href="https://github.com/encode/httpx/blob/master/docs/advanced/timeouts.md">https://github.com/encode/httpx/blob/master/docs/advanced/timeouts.md</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-4">[S4] HTTPX — Resource limits (docs/advanced/resource-limits.md) — <a href="https://github.com/encode/httpx/blob/master/docs/advanced/resource-limits.md">https://github.com/encode/httpx/blob/master/docs/advanced/resource-limits.md</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-5">[S5] HTTPX — Transports (docs/advanced/transports.md) — <a href="https://github.com/encode/httpx/blob/master/docs/advanced/transports.md">https://github.com/encode/httpx/blob/master/docs/advanced/transports.md</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-6">[S6] httpx — GitHub releases list — <a href="https://api.github.com/repos/encode/httpx/releases?per_page=100">https://api.github.com/repos/encode/httpx/releases?per_page=100</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-7">[S7] encode/httpx — GitHub repository API — <a href="https://api.github.com/repos/encode/httpx">https://api.github.com/repos/encode/httpx</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-8">[S8] httpx LICENSE.md — <a href="https://raw.githubusercontent.com/encode/httpx/master/LICENSE.md">https://raw.githubusercontent.com/encode/httpx/master/LICENSE.md</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-9">[S9] aiohttp 3.14.5 — GitHub latest release API — <a href="https://api.github.com/repos/aio-libs/aiohttp/releases/latest">https://api.github.com/repos/aio-libs/aiohttp/releases/latest</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-10">[S10] aiohttp — PyPI JSON metadata — <a href="https://pypi.org/pypi/aiohttp/json">https://pypi.org/pypi/aiohttp/json</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-11">[S11] aiohttp — Client reference (docs/client_reference.rst) — <a href="https://github.com/aio-libs/aiohttp/blob/master/docs/client_reference.rst">https://github.com/aio-libs/aiohttp/blob/master/docs/client_reference.rst</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-12">[S12] aiohttp — Client quickstart, timeouts (docs/client_quickstart.rst) — <a href="https://github.com/aio-libs/aiohttp/blob/master/docs/client_quickstart.rst">https://github.com/aio-libs/aiohttp/blob/master/docs/client_quickstart.rst</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-13">[S13] aiohttp — Changes (docs/changes.rst), retry of closed connections (#7297) — <a href="https://github.com/aio-libs/aiohttp/blob/master/docs/changes.rst">https://github.com/aio-libs/aiohttp/blob/master/docs/changes.rst</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-14">[S14] aiohttp — Client middleware cookbook (docs/client_middleware_cookbook.rst) — <a href="https://github.com/aio-libs/aiohttp/blob/master/docs/client_middleware_cookbook.rst">https://github.com/aio-libs/aiohttp/blob/master/docs/client_middleware_cookbook.rst</a> — retrieved 2026-10-12 — via mcp:context7</li>
+<li id="s-15">[S15] aiohttp LICENSE.txt — <a href="https://raw.githubusercontent.com/aio-libs/aiohttp/master/LICENSE.txt">https://raw.githubusercontent.com/aio-libs/aiohttp/master/LICENSE.txt</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-16">[S16] aiohttp — project changelog — <a href="https://docs.aiohttp.org/en/stable/changes.html">https://docs.aiohttp.org/en/stable/changes.html</a> — retrieved 2026-10-12 — via web</li>
+<li id="s-17">[S17] aio-libs/aiohttp — GitHub repository API — <a href="https://api.github.com/repos/aio-libs/aiohttp">https://api.github.com/repos/aio-libs/aiohttp</a> — retrieved 2026-10-12 — via web</li>
+</ol></section>
+  <footer>Generated by the tech-brief workflow. Approved by a human before rendering.</footer>
+</main>
+</body>
+</html>

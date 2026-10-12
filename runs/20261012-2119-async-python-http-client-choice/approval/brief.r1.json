@@ -1,0 +1,16 @@
+{
+  "kind": "brief",
+  "round": 1,
+  "decision": "approved",
+  "valid": true,
+  "answer": "Approve",
+  "feedback": null,
+  "target": "30-brief-draft.md",
+  "target_sha256": "4fcb8a980922a3fb1003e6ca5ea7b803226a500c9fbb8d8bc9c5fa5c874448a3",
+  "marker_sha8": "4fcb8a98",
+  "question": "[tech-brief:approve run=20261012-2119-async-python-http-client-choice draft=4fcb8a98] Approve this brief for final output?",
+  "tool_use_id": "toolu_01MV25ccjxswHBRagoi1zXrg",
+  "session_id": "44092147-87ff-4b87-a9d7-0153b8a5bbdf",
+  "captured_at": "2026-10-12T19:25:34.501Z",
+  "captured_by": "PostToolUse hook (post_tool_state.mjs)"
+}
