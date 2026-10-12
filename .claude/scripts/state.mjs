@@ -3,10 +3,12 @@
 //   node .claude/scripts/state.mjs hash <file>
 //   node .claude/scripts/state.mjs status <run-id>
 //   node .claude/scripts/state.mjs set-status <run-id> <status> [--reason "<text>"]
-//   node .claude/scripts/state.mjs resume-plan [run-id]     (default: newest run not done)
+//   node .claude/scripts/state.mjs next [run-id]       next step (default run: newest not done);
+//                                                       resume-plan is an alias
+//   node .claude/scripts/state.mjs plan <run-id>       write 02-plan.md from the selection rules
 import { join, resolve } from 'node:path';
 import { parseFault } from '../skills/artifact-contract/scripts/validate.mjs';
-import { latestOpenRun, resumePlan } from '../hooks/lib/resume.mjs';
+import { latestOpenRun, nextStep, writePlan } from '../hooks/lib/workflow.mjs';
 import { hashFile, initRun, readState, ROOT, RUNS, summarize, updateState } from '../hooks/lib/state.mjs';
 
 const RUN_STATUSES = ['intake', 'requirements', 'research', 'synthesis', 'approval', 'rendering', 'done', 'blocked'];
@@ -57,10 +59,16 @@ try {
       out({ run_id: s.run_id, status: s.status });
       break;
     }
+    case 'next':
     case 'resume-plan': {
       const runId = args[0] ? runIdArg(args[0]) : latestOpenRun();
       if (!runId) throw new Error('no unfinished run found under runs/');
-      out(resumePlan(runId));
+      out(nextStep(runId));
+      break;
+    }
+    case 'plan': {
+      if (!args[0]) throw new Error('usage: plan <run-id>');
+      out(writePlan(runIdArg(args[0])));
       break;
     }
     default:

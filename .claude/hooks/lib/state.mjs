@@ -151,38 +151,79 @@ export function applyWrite(state, runDir, rel, absPath, agent = null) {
 }
 
 // Called by the PostToolUse hook after any write under runs/<run-id>/.
+// Returns the recorded artifact (with its script findings), or null if not a run artifact.
 export function recordWrite(absPath, { agent = null } = {}) {
   const loc = locate(absPath);
   if (!loc || UNTRACKED(loc.rel) || !existsSync(absPath)) return null;
-  return updateState(loc.runDir, (state) => applyWrite(state, loc.runDir, loc.rel, absPath, agent));
+  let recorded = null;
+  updateState(loc.runDir, (state) => {
+    applyWrite(state, loc.runDir, loc.rel, absPath, agent);
+    recorded = { rel: loc.rel, ...state.artifacts[loc.rel] };
+  });
+  return recorded;
 }
 
-// A gate report decides valid/invalid for the artifacts it checked (only if they're unchanged).
+// Owning agent per artifact path.
+export const OWNER = {
+  '01-requirements.md': 'requirements-formalizer',
+  'research/11-docs.md': 'docs-researcher',
+  'research/12-ecosystem.md': 'ecosystem-researcher',
+  'research/14-patterns.md': 'patterns-researcher',
+  '30-brief-draft.md': 'brief-synthesizer',
+  'final/decision-brief.md': 'brief-renderer',
+  'final/decision-brief.html': 'brief-renderer',
+};
+const ARTIFACT_OF = Object.fromEntries(Object.entries(OWNER).filter(([p]) => !p.startsWith('final/')).map(([p, o]) => [o, p]));
+const ARTIFACT_IN = /(01-requirements\.md|research\/1\d-[a-z]+\.md|30-brief-draft\.md|final\/decision-brief\.(?:md|html))/;
+
+function tableRows(text) {
+  return text.split('\n').filter((l) => l.trim().startsWith('|'))
+    .map((l) => l.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim().replace(/`/g, '')))
+    .filter((c) => !c.every((x) => /^:?-{2,}:?$/.test(x))).slice(1);
+}
+
+// A gate report decides each checked artifact: findings land on the artifact of the named
+// owner (falling back to the Artifact column); checked artifacts without findings become
+// valid. Artifacts changed since they were recorded are left alone.
 function recordGateReport(state, runDir, rel, absPath) {
   const { fm, body } = splitFrontMatter(readFileSync(absPath, 'utf8'));
   const section = (title) => body.split(/\n(?=## )/).find((s) => s.startsWith(`## ${title}`)) ?? '';
-  const rows = (text) => text.split('\n').filter((l) => l.trim().startsWith('|'))
-    .map((l) => l.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim().replace(/`/g, '')))
-    .filter((c) => !c.every((x) => /^:?-{2,}:?$/.test(x))).slice(1);
-  const checked = rows(section('Script gates')).map((r) => r[0]);
-  const flagged = new Set(rows(section('Findings')).map((r) => r[2]));
+  const checked = tableRows(section('Script gates')).map((r) => r[0].match(ARTIFACT_IN)?.[1]).filter(Boolean);
+  const stage = fm?.stage ?? null;
+  const round = fm?.round ? Number(fm.round) : null;
+  const byArtifact = {};
+  for (const r of tableRows(section('Findings'))) {
+    const target = ARTIFACT_OF[r[3]] ?? r[2]?.match(ARTIFACT_IN)?.[1];
+    if (!target) continue;
+    (byArtifact[target] ??= []).push({ gate: r[1], finding: r[4], fix: r[5] ?? '' });
+  }
+  // A failed report whose findings name nothing we know still fails every checked artifact.
+  if (fm?.result === 'fail' && !Object.keys(byArtifact).length) {
+    for (const p of checked) byArtifact[p] = [{ gate: 'GATE', finding: `see ${rel}`, fix: '' }];
+  }
   const snapshot = {};
-  for (const path of checked) {
+  for (const path of new Set([...checked, ...Object.keys(byArtifact)])) {
     const a = state.artifacts[path];
     const file = join(runDir, path);
     if (!a || !existsSync(file)) continue;
     snapshot[path] = a.sha256;
-    if (hashFile(file) !== a.sha256) continue; // changed since the hook recorded it
-    if (flagged.has(path)) a.status = 'invalid';
-    else if (a.findings.length === 0) a.status = 'valid';
+    if (hashFile(file) !== a.sha256) continue;
+    if (byArtifact[path]) {
+      a.status = 'invalid';
+      a.gate_findings = byArtifact[path];
+      a.flagged_by = { stage, round, report: rel };
+    } else if (checked.includes(path) && a.findings.length === 0) {
+      a.status = 'valid';
+      delete a.gate_findings;
+      delete a.flagged_by;
+    }
   }
   state.gates[rel.replace(/^gates\//, '').replace(/\.md$/, '')] = {
-    stage: fm?.stage ?? null,
-    round: fm?.round ? Number(fm.round) : null,
+    stage, round,
     result: fm?.result ?? null,
     report: rel,
     recorded_at: new Date().toISOString(),
-    flagged: [...flagged],
+    flagged: Object.keys(byArtifact),
     checked: snapshot,
   };
 }

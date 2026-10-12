@@ -24,8 +24,11 @@ prompt (`gates/<stage>.r<N>.md`) and write nothing else. Never edit the artifact
    on them is not a finding.
 
    **`research` stage**
-   - CURRENCY: for each candidate, the current version and its release date (library) or
-     GA status and tier (architecture) appear in a Findings bullet with a citation.
+   - CURRENCY: for each candidate, a Findings bullet with a citation states the current
+     version and its release date (library), or the current tiers/SKUs relevant to the
+     constraints with their key limits (architecture). Any feature the comparison relies on
+     that is in preview is marked as preview. A missing "GA announcement" for a long-
+     established service is **not** a finding.
    - CONSTRAINT-COVERAGE: (1) each hard constraint × candidate has `met`, `unmet` or
      `unknown` in at least one research Constraint check table; (2) each decision
      criterion × candidate has at least one cited Findings bullet about that criterion.

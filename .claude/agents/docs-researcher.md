@@ -17,8 +17,9 @@ the run folder and write nothing else.
 ## What to find, per candidate
 - What it is and how it addresses the question.
 - **Current version:** for a library, the latest stable version and its release date
-  (official release notes or package registry). For a service, GA status and the
-  relevant tier or SKU.
+  (official release notes or package registry). For a service, the current tiers/SKUs
+  relevant to the constraints and their key limits; mark any feature you rely on that is
+  still in preview.
 - Support and lifecycle: LTS, end of support, supported runtimes.
 - Capabilities and limits relevant to each hard constraint and decision criterion.
 - Pricing model, when cost is a constraint or criterion.

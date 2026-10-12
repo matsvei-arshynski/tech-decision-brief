@@ -57,4 +57,28 @@ if (tool === 'Bash') {
     block('shell commands may not touch approval/, workflow-state.json or final/ in a run folder.');
   }
 }
+
+// Launch guard: a subagent launch for a run must be one the workflow engine expects right
+// now, with exactly the prompt it computed. Fails open on engine errors (a launch is
+// harmless compared to an unapproved final write), closed on a mismatch.
+if (tool === 'Agent') {
+  const prompt = String(input.tool_input?.prompt ?? '');
+  const runId = prompt.match(/^Run folder: runs\/([\w.-]+)\s*$/m)?.[1];
+  if (!runId) process.exit(0); // not a workflow launch
+  let next;
+  try {
+    const { nextStep } = await import('./lib/workflow.mjs');
+    ({ next } = nextStep(runId, { dryRun: true }));
+  } catch {
+    process.exit(0);
+  }
+  const norm = (s) => String(s).replace(/\r\n/g, '\n').split('\n').map((l) => l.trimEnd()).join('\n').trim();
+  const expected = next.launch ?? [];
+  const match = expected.some((l) => l.subagent_type === input.tool_input?.subagent_type && norm(l.prompt) === norm(prompt));
+  if (!match) {
+    block(expected.length
+      ? `this launch doesn't match the next step (${next.stage}). Launch exactly:\n${expected.map((l) => `- ${l.subagent_type}:\n${l.prompt}`).join('\n')}`
+      : `the next step is "${next.stage}", which launches no agent. Run node .claude/scripts/state.mjs next ${runId} and follow it.`);
+  }
+}
 process.exit(0);

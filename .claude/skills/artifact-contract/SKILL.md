@@ -84,7 +84,7 @@ write under `runs/` and records the result in `workflow-state.json`. To run it y
 |---|---|---|---|
 | STRUCTURE | script | all | Front matter; exact headings in order; candidate subsections match requirements; one Constraint check row per hard constraint × candidate; brief matrix shape, sorting and correct totals |
 | CITATIONS | script | research, brief | Source lines in the fixed format, numbered S1…Sn; every `[Sn]` defined and every source cited; every Findings bullet cited; every matrix score cited; every brief source comes from the research |
-| CURRENCY | validator | research | Library: each candidate's latest stable version **and** its release date are stated and cited. Architecture: each candidate's GA status and relevant tier are stated and cited |
+| CURRENCY | validator | research | Library: each candidate's latest stable version **and** its release date are stated and cited. Architecture: each candidate's current tiers/SKUs relevant to the constraints, with their key limits, are stated and cited from pages retrieved in this run; any feature the comparison relies on that is in **preview** is marked as such |
 | CONSTRAINT-COVERAGE | validator | research | Every hard constraint × candidate pair is met / unmet / unknown in at least one research artifact (not `n/a` everywhere), **and** every decision criterion × candidate pair has at least one cited finding to score it on |
 | CONSTRAINT-COVERAGE | validator | brief | (a) Brief statuses follow the merge rule over the research (unmet if any unmet, else met if any met, else unknown); (b) the recommended option has no `unmet`; (c) if it has an `unknown`, confidence is `low` and the gap is listed under Open questions; (d) every criterion × candidate score cites a research finding about that criterion (the score value itself is not judged) |
 
@@ -93,7 +93,7 @@ write under `runs/` and records the result in `workflow-state.json`. To run it y
 Each finding names one owner: the agent that owns the artifact to change.
 
 - STRUCTURE, CITATIONS: the owner of the failing artifact.
-- CURRENCY: `docs-researcher` for versions and GA status; `ecosystem-researcher` for release
+- CURRENCY: `docs-researcher` for versions, tiers and preview status; `ecosystem-researcher` for release
   dates when it was selected.
 - CONSTRAINT-COVERAGE at the research stage: the researcher for the constraint's or
   criterion's dimension.
@@ -108,3 +108,5 @@ Each finding names one owner: the agent that owns the artifact to change.
   re-writing the brief can't fix a research gap.
 
 Self-check before you return: run through the STRUCTURE and CITATIONS rules yourself.
+After every write, a hook runs the script gates. If it reports failures, fix exactly those
+with Edit before you reply. Don't reply while your artifact still fails them.
